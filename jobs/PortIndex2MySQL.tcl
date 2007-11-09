@@ -8,7 +8,7 @@
 # 30-Jul-2007
 # $Id$
 #
-# Copyright (c) 2007 Juan Manuel Palacios, MacPorts Team.
+# Copyright (c) 2007 Juan Manuel Palacios, The MacPorts Project.
 # Copyright (c) 2003 Apple Computer, Inc.
 # Copyright (c) 2002 Kevin Van Vechten. 
 # All rights reserved.
