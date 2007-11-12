@@ -2,28 +2,28 @@
 <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>Debug</key>
-	<false/>
 	<key>Label</key>
 	<string>org.macports.PortIndex2MySQL</string>
-	<key>OnDemand</key>
-	<true/>
 	<key>ProgramArguments</key>
 	<array>
 		<string>/opt/local/share/macports/resources/portmgr/PortIndex2MySQL</string>
 	</array>
-	<key>RunAtLoad</key>
-	<false/>
 	<key>StartCalendarInterval</key>
+        <array>
 	<dict>
 		<key>Hour</key>
 		<integer>4</integer>
 		<key>Minute</key>
 		<integer>15</integer>
 	</dict>
-	<key>StartInterval</key>
-	<integer>43200</integer>
+	    <dict>
+	        <key>Hour</key>
+		<integer>16</integer>
+		<key>Minute</key>
+		<integer>15</integer>
+	    </dict>
+        </array>
         <key>UserName</key>
-        <string>juan</string>
+        <string>jmpp</string>
 </dict>
 </plist>
