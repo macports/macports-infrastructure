@@ -5,7 +5,7 @@
 # Kevin Van Vechten | kevin@opendarwin.org
 # 3-Oct-2002
 # Juan Manuel Palacios | jmpp@macports.org
-# 30-Jul-2007
+# 22-Nov-2007
 # $Id$
 #
 # Copyright (c) 2007 Juan Manuel Palacios, The MacPorts Project.
@@ -36,6 +36,7 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
+
 
 #####
 # The PortIndex2MySQL script populates a database with key information extracted
@@ -185,7 +186,7 @@ proc getpasswd {passwdfile} {
 # Database abstraction variables:
 set sqlfile "/tmp/portsdb.sql"
 set dbcmd [macports::findBinary mysql5]
-set dbhost 127.0.0.1
+set dbhost localhost
 set dbuser macports
 set passwdfile "./password_file"
 set dbpasswd [getpasswd $passwdfile]
@@ -301,14 +302,14 @@ foreach {name array} $ports {
     foreach category $categories {
         set category [sql_escape $category]
         puts $sqlfile_fd "INSERT INTO categories VALUES ('$portname', '$category', $primary);"
-        incr primary
+        set primary 0
     }
     
     set primary 1
     foreach maintainer $maintainers {
         set maintainer [sql_escape $maintainer]
         puts $sqlfile_fd "INSERT INTO maintainers VALUES ('$portname', '$maintainer', $primary);"
-        incr primary
+        set primary 0
     }
 
     foreach build_dep $depends_build {
