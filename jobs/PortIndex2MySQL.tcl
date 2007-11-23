@@ -58,12 +58,6 @@
 #####
 
 
-# Load macports1.0 so that we can use some of its procs and the portinfo array.
-catch {source \
-    [file join "@TCL_PACKAGE_DIR@" macports1.0 macports_fastload.tcl]}
-package require macports
-
-
 # Runtime information log file and reciepient.
 set runlog "/tmp/portsdb.log"
 set runlog_fd [open $runlog w+]
@@ -72,6 +66,7 @@ set mailprog "/usr/sbin/sendmail"
 set DATE [clock format [clock seconds] -format "%A %Y-%m-%d at %T"]
 set subject "PortIndex2MySQL run failure on $DATE"
 set SPAM_LOVERS macports-dev@lists.macosforge.org
+
 
 # House keeping on exit.
 proc cleanup {args} {
@@ -95,6 +90,32 @@ proc terminate {exit_status} {
     exit $exit_status
 }
 
+
+# We first initialize the runlog with a proper mail subject.
+puts $runlog_fd "Subject: $subject"
+
+# Check if there are any stray sibling jobs before moving on, bail in such case.
+if {[file exists $lockfile]} {
+    puts $runlog_fd "PortIndex2MySQL lock file found, is another job running?" 
+    terminate 1
+} else {
+    set lockfile_fd [open $lockfile a]
+}
+
+
+# Load macports1.0 so that we can use some of its procs and the portinfo array.
+if {[catch { source [file join "@TCL_PACKAGE_DIR@" macports1.0 macports_fastload.tcl] } errstr]} {
+    puts $runlog_fd "${::errorInfo}"
+    puts $runlog_fd "Failed to locate the macports1.0 Tcl package file: $errstr"
+    cleanup lockfile
+    terminate 1
+}
+if {[catch { package require macports } errstr]} {
+    puts $runlog_fd "${::errorInfo}"
+    puts $runlog_fd "Failed to load the macports1.0 Tcl package: $errstr"
+    cleanup lockfile
+    terminate 1
+}
 
 # UI instantiation to route information/error messages wherever we want.
 proc ui_channels {priority} {
@@ -130,35 +151,13 @@ proc ui_channels {priority} {
     }
 }
 
-
-# We first initialize the runlog with a proper mail subject:
-puts $runlog_fd "Subject: $subject"
-
-# Check if there are any stray sibling jobs before moving on, bail in such case.
-if {[file exists $lockfile]} {
-    ui_error "PortIndex2MySQL lock file found, is another job running?"
-    terminate 1
-} else {
-    set lockfile_fd [open $lockfile a]
-}
-
-
 # Initialize macports1.0 and its UI, in order to find the sources.conf file
 # (which is what will point us to the PortIndex we're gonna use) and use
 # the runtime information.
 array set ui_options {ports_verbose yes}
 if {[catch {mportinit ui_options} errstr]} {
-    ui_error "${::errorInfo}"
-    ui_error "Failed to initialize MacPorts, $errstr"
-    cleanup lockfile
-    terminate 1
-}
-
-# Call the selfupdate procedure to make sure the MacPorts installation
-# is up-to-date and with a fresh ports tree.
-if {[catch {macports::selfupdate} errstr]} {
-    ui_error "${::errorInfo}"
-    ui_error "Failed to update the ports tree, $errstr"
+    puts $runlog_fd "${::errorInfo}"
+    puts $runlog_fd "Failed to initialize MacPorts: $errstr"
     cleanup lockfile
     terminate 1
 }
@@ -188,10 +187,9 @@ set sqlfile "/tmp/portsdb.sql"
 set dbcmd [macports::findBinary mysql5]
 set dbhost localhost
 set dbuser macports
-set passwdfile "./password_file"
+set passwdfile "/opt/local/share/macports/resources/portmgr/password_file"
 set dbpasswd [getpasswd $passwdfile]
 set dbname macports
-
 
 # Flat text file to which sql statements are written.
 if {[catch {open $sqlfile w+} sqlfile_fd]} {
@@ -199,6 +197,25 @@ if {[catch {open $sqlfile w+} sqlfile_fd]} {
     cleanup lockfile
     terminate 1
 }
+
+
+# Call the selfupdate procedure to make sure the MacPorts installation
+# is up-to-date and with a fresh ports tree.
+if {[catch {macports::selfupdate} errstr]} {
+    ui_error "${::errorInfo}"
+    ui_error "Failed to update the ports tree, $errstr"
+    cleanup lockfile
+    terminate 1
+}
+
+# Load every port in the index through a search that matches everything.
+if {[catch {set ports [mportsearch ".+"]} errstr]} {
+    ui_error "${::errorInfo}"
+    ui_error "port search failed: $errstr"
+    cleanup sqlfile lockfile
+    terminate 1
+}
+
 
 # SQL string escaping.
 proc sql_escape {str} {
@@ -211,7 +228,7 @@ proc sql_escape {str} {
 # Initial creation of database tables: log, portfiles, categories, maintainers, dependencies, variants and platforms.
 # Do we need any other?
 puts $sqlfile_fd "DROP TABLE IF EXISTS log;"
-puts $sqlfile_fd "CREATE TABLE IF NOT EXISTS log (activity VARCHAR(255), activity_time TIMESTAMP(14));"
+puts $sqlfile_fd "CREATE TABLE log (activity VARCHAR(255), activity_time TIMESTAMP(14));"
 puts $sqlfile_fd "INSERT INTO log VALUES ('update', NOW());"
 
 puts $sqlfile_fd "DROP TABLE IF EXISTS portfiles;"
@@ -232,14 +249,6 @@ puts $sqlfile_fd "CREATE TABLE variants (portfile VARCHAR(255), variant VARCHAR(
 puts $sqlfile_fd "DROP TABLE IF EXISTS platforms;"
 puts $sqlfile_fd "CREATE TABLE platforms (portfile VARCHAR(255), platform VARCHAR(255));"
 
-
-# Load every port in the index through a search that matches everything.
-if {[catch {set ports [mportsearch ".+"]} errstr]} {
-    ui_error "${::errorInfo}"
-    ui_error "port search failed: $errstr"
-    cleanup sqlfile lockfile
-    terminate 1
-}
 
 # Iterate over each matching port, extracting its information from the
 # portinfo array.
