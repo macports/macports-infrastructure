@@ -204,7 +204,7 @@ if {[catch {open $sqlfile w+} sqlfile_fd]} {
 if {[catch {macports::selfupdate} errstr]} {
     ui_error "${::errorInfo}"
     ui_error "Failed to update the ports tree, $errstr"
-    cleanup lockfile
+    cleanup sqlfile lockfile
     terminate 1
 }
 
