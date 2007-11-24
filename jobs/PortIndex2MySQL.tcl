@@ -184,12 +184,13 @@ proc getpasswd {passwdfile} {
 
 # Database abstraction variables:
 set sqlfile "/tmp/portsdb.sql"
-set dbcmd [macports::findBinary mysql5]
-set dbhost localhost
-set dbuser macports
+set portsdb_host localhost
+set portsdb_name macports
+set portsdb_user macports
 set passwdfile "/opt/local/share/macports/resources/portmgr/password_file"
-set dbpasswd [getpasswd $passwdfile]
-set dbname macports
+set portsdb_passwd [getpasswd $passwdfile]
+set portsdb_cmd [macports::findBinary mysql5]
+
 
 # Flat text file to which sql statements are written.
 if {[catch {open $sqlfile w+} sqlfile_fd]} {
@@ -356,7 +357,7 @@ if {[catch {seek $sqlfile_fd 0 start} errstr]} {
     cleanup sqlfile lockfile
     terminate 1
 }
-if {[catch {exec -- $dbcmd --host=$dbhost --user=$dbuser --password=$dbpasswd --database=$dbname <@ $sqlfile_fd} errstr]} {
+if {[catch {exec -- $portsdb_cmd --host=$portsdb_host --user=$portsdb_user --password=$portsdb_passwd --database=$portsdb_name <@ $sqlfile_fd} errstr]} {
     ui_error "${::errorCode}: $errstr"
     cleanup sqlfile lockfile
     terminate 1
