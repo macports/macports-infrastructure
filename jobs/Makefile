@@ -13,6 +13,7 @@ all: ${SCRIPTS}
 
 PortIndex2MySQL: PortIndex2MySQL.tcl
 	${edit} $< > $@
+	chmod 755 $@
 
 clean:
 	rm -f ${SCRIPTS}
