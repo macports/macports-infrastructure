@@ -200,9 +200,8 @@ if {[catch {open $sqlfile w+} sqlfile_fd]} {
 }
 
 
-# Call the selfupdate procedure to make sure the MacPorts installation
-# is up-to-date and with a fresh ports tree.
-if {[catch {macports::selfupdate} errstr]} {
+# Call the sync procedure to make sure we always have a fresh ports tree.
+if {[catch {mportsync} errstr]} {
     ui_error "${::errorInfo}"
     ui_error "Failed to update the ports tree, $errstr"
     cleanup sqlfile lockfile
