@@ -229,7 +229,6 @@ proc sql_escape {str} {
 # Do we need any other?
 puts $sqlfile_fd "DROP TABLE IF EXISTS log;"
 puts $sqlfile_fd "CREATE TABLE log (activity VARCHAR(255), activity_time TIMESTAMP(14));"
-puts $sqlfile_fd "INSERT INTO log VALUES ('update', NOW());"
 
 puts $sqlfile_fd "DROP TABLE IF EXISTS portfiles;"
 puts $sqlfile_fd "CREATE TABLE portfiles (name VARCHAR(255) PRIMARY KEY NOT NULL, path VARCHAR(255), version VARCHAR(255),  description TEXT);"
@@ -347,6 +346,9 @@ foreach {name array} $ports {
     }
 
 }
+
+# Mark the db regen as done only once we're done processing all ports:
+puts $sqlfile_fd "INSERT INTO log VALUES ('update', NOW());"
 
 
 # Pipe the contents of the generated sql file to the database command,
