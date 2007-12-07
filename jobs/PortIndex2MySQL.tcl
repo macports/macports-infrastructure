@@ -45,10 +45,10 @@
 # it with 'mportinit' below. Main use of the resulting database is providing live
 # information to the ports.php page, a client tailored to poll it. For this very reason,
 # information fed to the database always has to be kept up to date in order to remain
-# meaningful, which is accomplished simply by calling 'macports::selfupdate' (which
-# updates the ports tree in use) and by installing the script on cron/launchd to be run
-# on a timely schedule (not any more frequent than the run of the mprsyncup script on
-# the MacPorts server, which is every half hour).
+# meaningful, which is accomplished simply by calling the 'mportsync' proc in macports1.0
+# (which updates the ports tree in use) and by installing the script on cron/launchd to be
+# run on a timely schedule (not any more frequent than the run of the PortIndexRegen.sh
+# script on that creates a new PortIndex file, which is every twelve hours).
 #
 # Remaining requirement to successfully run this script is performing the necessary
 # MySQL admin tasks on the host box to create the database in the first place and the
@@ -117,7 +117,10 @@ if {[catch { package require macports } errstr]} {
     terminate 1
 }
 
-# UI instantiation to route information/error messages wherever we want.
+# macports1.0 UI instantiation to route information/error messages wherever we want.
+# This is a custom ui_channels proc because we want to get reported information on
+# channels other than the default stdout/stderr that the macports1.0 API provides,
+# namely a log file we can later mail to people in charge if need be.
 proc ui_channels {priority} {
     global runlog_fd
     switch $priority {
