@@ -34,6 +34,7 @@ set -e
 # Commands we need:
 SVN="/opt/local/bin/svn -q --non-interactive"
 RSYNC="/usr/bin/rsync -q"
+RM="/bin/rm"
 
 # Paths we'll work on:
 SVNROOT=/var/tmp/macports
@@ -57,7 +58,7 @@ ${SVN} export ${TBASE} ${TBASE}-export
 if [ ! -d ${RSYNCROOT}/trunk/base ]; then
     mkdir -p ${RSYNCROOT}/trunk
 fi
-${RSYNC} -a -I --delete ${TBASE}-export/ ${RSYNCROOT}/trunk/base && rm -rf ${TBASE}-export
+${RSYNC} -a -I --delete ${TBASE}-export/ ${RSYNCROOT}/trunk/base && ${RM} -rf ${TBASE}-export
 
 
 # Read what tag we're releasing from, switch to/checkout a copy, export and rsync it to ${RSYNCROOT}/release/base:
@@ -75,7 +76,7 @@ ${SVN} export ${RBASE} ${RBASE}-export
 if [ ! -d ${RSYNCROOT}/release/base ]; then
     mkdir -p ${RSYNCROOT}/release/base
 fi
-${RSYNC} -a -I --delete ${RBASE}-export/ ${RSYNCROOT}/release/base && rm -rf ${RBASE}-export
+${RSYNC} -a -I --delete ${RBASE}-export/ ${RSYNCROOT}/release/base && ${RM} -rf ${RBASE}-export
 
 
 # Update/checkout the ports tree, export it and rsync it to ${RSYNCROOT}/release/ports:
@@ -88,18 +89,18 @@ ${SVN} export ${PORTS} ${PORTS}-export
 if [ ! -d ${RSYNCROOT}/release/ports ]; then
     mkdir -p ${RSYNCROOT}/release/ports
 fi
-${RSYNC} -a -I --delete ${PORTS}-export/ ${RSYNCROOT}/release/ports && rm -rf ${PORTS}-export
+${RSYNC} -a -I --delete ${PORTS}-export/ ${RSYNCROOT}/release/ports && ${RM} -rf ${PORTS}-export
 
 
 # Compatibility checks:
 cd ${RSYNCROOT}
 if [ ! -h dpupdate ]; then
-    rm -rf dpupdate && ln -s trunk dpupdate
+    ${RM} -rf dpupdate && ln -s trunk dpupdate
 fi
 if [ ! -h dpupdate1 ]; then
-    rm -rf dpupdate1 && ln -s release dpupdate1
+    ${RM} -rf dpupdate1 && ln -s release dpupdate1
 fi
 if [ ! -h trunk/dports ]; then
     cd trunk
-    rm -rf dports && ln -s ../release/ports dports
+    ${RM} -rf dports && ln -s ../release/ports dports
 fi
