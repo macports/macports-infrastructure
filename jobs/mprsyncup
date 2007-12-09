@@ -1,5 +1,6 @@
 #!/bin/sh
 
+
 ####
 # Script to checkout/update base sources from both trunk (ToT) and the current
 # release tag (as determined by the base/config/RELEASE_URL file) and a ports
@@ -29,6 +30,7 @@
 # $Id$
 ####
 
+
 set -e
 
 # Commands we need:
@@ -36,7 +38,6 @@ SVN="/opt/local/bin/svn -q --non-interactive"
 RSYNC="/usr/bin/rsync -q"
 RM="/bin/rm"
 MKDIR="/bin/mkdir"
-ECHO="/bin/echo"
 LN="/bin/ln"
 
 # Paths we'll work on:
@@ -67,7 +68,7 @@ ${RSYNC} -a -I --delete ${TBASE}-export/ ${RSYNCROOT}/trunk/base && ${RM} -rf ${
 # Read what tag we're releasing from, switch to/checkout a copy, export and rsync it to ${RSYNCROOT}/release/base:
 read RELEASE_URL < ${TBASE}/${RELEASE_URL_FILE}
 if [ ! -n ${RELEASE_URL} ]; then
-    ${ECHO} "no RELEASE_URL specified in svn trunk, baling out"
+    echo "no RELEASE_URL specified in svn trunk, baling out!"
     exit 1
 fi
 if [ -d ${RBASE}/.svn ]; then
