@@ -35,6 +35,9 @@ set -e
 SVN="/opt/local/bin/svn -q --non-interactive"
 RSYNC="/usr/bin/rsync -q"
 RM="/bin/rm"
+MKDIR="/bin/mkdir"
+ECHO="/bin/echo"
+LN="/bin/ln"
 
 # Paths we'll work on:
 SVNROOT=/var/tmp/macports
@@ -56,7 +59,7 @@ else
 fi
 ${SVN} export ${TBASE} ${TBASE}-export
 if [ ! -d ${RSYNCROOT}/trunk/base ]; then
-    mkdir -p ${RSYNCROOT}/trunk
+    ${MKDIR} -p ${RSYNCROOT}/trunk
 fi
 ${RSYNC} -a -I --delete ${TBASE}-export/ ${RSYNCROOT}/trunk/base && ${RM} -rf ${TBASE}-export
 
@@ -64,7 +67,7 @@ ${RSYNC} -a -I --delete ${TBASE}-export/ ${RSYNCROOT}/trunk/base && ${RM} -rf ${
 # Read what tag we're releasing from, switch to/checkout a copy, export and rsync it to ${RSYNCROOT}/release/base:
 read RELEASE_URL < ${TBASE}/${RELEASE_URL_FILE}
 if [ ! -n ${RELEASE_URL} ]; then
-    echo "no RELEASE_URL specified in svn trunk, baling out"
+    ${ECHO} "no RELEASE_URL specified in svn trunk, baling out"
     exit 1
 fi
 if [ -d ${RBASE}/.svn ]; then
@@ -74,7 +77,7 @@ else
 fi
 ${SVN} export ${RBASE} ${RBASE}-export
 if [ ! -d ${RSYNCROOT}/release/base ]; then
-    mkdir -p ${RSYNCROOT}/release/base
+    ${MKDIR} -p ${RSYNCROOT}/release/base
 fi
 ${RSYNC} -a -I --delete ${RBASE}-export/ ${RSYNCROOT}/release/base && ${RM} -rf ${RBASE}-export
 
@@ -87,7 +90,7 @@ else
 fi
 ${SVN} export ${PORTS} ${PORTS}-export
 if [ ! -d ${RSYNCROOT}/release/ports ]; then
-    mkdir -p ${RSYNCROOT}/release/ports
+    ${MKDIR} -p ${RSYNCROOT}/release/ports
 fi
 ${RSYNC} -a -I --delete ${PORTS}-export/ ${RSYNCROOT}/release/ports && ${RM} -rf ${PORTS}-export
 
@@ -95,12 +98,12 @@ ${RSYNC} -a -I --delete ${PORTS}-export/ ${RSYNCROOT}/release/ports && ${RM} -rf
 # Compatibility checks:
 cd ${RSYNCROOT}
 if [ ! -h dpupdate ]; then
-    ${RM} -rf dpupdate && ln -s trunk dpupdate
+    ${RM} -rf dpupdate && ${LN} -s trunk dpupdate
 fi
 if [ ! -h dpupdate1 ]; then
-    ${RM} -rf dpupdate1 && ln -s release dpupdate1
+    ${RM} -rf dpupdate1 && ${LN} -s release dpupdate1
 fi
 if [ ! -h trunk/dports ]; then
     cd trunk
-    ${RM} -rf dports && ln -s ../release/ports dports
+    ${RM} -rf dports && ${LN} -s ../release/ports dports
 fi
