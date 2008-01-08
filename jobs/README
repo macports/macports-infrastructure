@@ -1,6 +1,6 @@
 
 This file explains the automated jobs that live in this directory and keep MacPorts running at the server level,
-added to the basic mail, mailman, www, trac & svn services:
+appart from the basic mail, mailman, www, trac & svn services:
 
  1) mprsyncup:
     Runs on Mac OS Forge servers every 30 minutes, on the hour and on the half hour, off launchd through the org.macports.mprsyncup.plist provided.
