@@ -48,8 +48,7 @@ cleanup () {
 if [ ! -e $LOCKFILE ]; then
     $TOUCH $LOCKFILE
 else
-    echo "Guide Regen lockfile found, is another regen job running?"
-    exit 1
+    echo "Guide Regen lockfile found, is another regen job running?" > $FAILURE_LOG; bail
 fi
 
 # Checkout/update the doc tree

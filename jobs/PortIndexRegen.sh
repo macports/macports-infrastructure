@@ -57,8 +57,7 @@ cleanup () {
 if [ ! -e $LOCKFILE ]; then
     touch $LOCKFILE
 else
-    echo "PortIndex Regen lockfile found, is another regen job running?"
-    exit 1
+    echo "PortIndex Regen lockfile found, is another regen job running?" > $FAILURE_LOG; bail
 fi
 
 # Checkout/update the ports tree
