@@ -11,7 +11,7 @@
 # Configuration
 LOCKFILE=/tmp/.mp_svn_guide_regen.lock
 # ROOT directory, where everything is. This needs to exist!
-ROOT=/tmp/mpdocs
+ROOT=/opt/mp_guide_regen
 # e-mail address to spam in case of failure.
 SPAM_LOVERS=macports-dev@lists.macosforge.org,markd@macports.org,wsiegrist@apple.com
 
