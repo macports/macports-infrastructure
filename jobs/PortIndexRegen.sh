@@ -32,7 +32,7 @@ PREFIX=${ROOT}/opt/local
 # Where MP installs macports1.0. This gets created.
 TCLPKG=${PREFIX}/lib/tcl
 # Path.
-PATH=${PREFIX}/bin:/bin:/usr/bin:/usr/sbin:/opt/local/bin
+PATH=${PREFIX}/bin:/bin:/usr/bin:/usr/sbin:/opt/local/bin:/usr/X11/bin
 # Log for the e-mail in case of failure.
 FAILURE_LOG=${ROOT}/failure.log
 # Commit message.
