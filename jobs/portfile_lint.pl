@@ -11,10 +11,16 @@ use strict;
 use Mail::Sendmail;
 
 my $REPOPATH = "/svn/repositories/macports/";
+my $REPOHOST = "http://svn.macosforge.org/repository/macports";
 my $SVNLOOK = "/opt/local/bin/svnlook";
 my $PORTCMD = "/opt/local/bin/port";
+my $SVN = "/opt/local/bin/svn -q --non-interactive";
+my $MKDIR = "/bin/mkdir -p";
+
 
 my $rev = $ARGV[0] or usage();
+my $TMPROOT = "/tmp/mp_lint/$rev";
+
 my @changes = `$SVNLOOK changed $REPOPATH -r $rev`;
 
 foreach my $change (@changes) {
@@ -26,6 +32,14 @@ foreach my $change (@changes) {
 	my $port = $change;
 	$port =~ s/^.*\/([^\/]+)\/Portfile$/$1/g;
 
+	# get the group directory
+	my $group = $change;
+	$group =~ s/^.*\/([^\/]+)\/[^\/]+\/Portfile$/$1/g;	
+
+	# make a temporary work area
+	`$MKDIR $TMPROOT/$group/$port`;
+	chdir("$TMPROOT/$group/$port") or die("Failed to change dir for port: $port");	
+	`$SVN co $REPOHOST/trunk/dports/$group/$port/ .`;
 	# test the port
 	_lint($port);
     }
@@ -38,7 +52,8 @@ foreach my $change (@changes) {
 
 sub _lint {
     my ($port) = @_; 
-    my $errors = `sudo $PORTCMD -q lint $port`;
+    my $errors = `$PORTCMD -qc lint`;
+
     if ($errors) {
 	my $maintainers = `$PORTCMD -q info --maintainer $port`;
 	# strip everything but the email addresses
