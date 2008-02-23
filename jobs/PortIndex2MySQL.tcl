@@ -58,6 +58,7 @@
 #####
 
 
+
 # Runtime information log file and reciepient.
 set runlog "/tmp/portsdb.log"
 set runlog_fd [open $runlog w+]
