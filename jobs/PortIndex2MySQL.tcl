@@ -65,9 +65,15 @@ set runlog_fd [open $runlog w+]
 set lockfile "/tmp/portsdb.lock"
 set mailprog "/usr/sbin/sendmail"
 set DATE [clock format [clock seconds] -format "%A %Y-%m-%d at %T"]
-set subject "PortIndex2MySQL run failure on $DATE"
+
 set SPAM_LOVERS macports-dev@lists.macosforge.org
 
+set SUBJECT "PortIndex2MySQL run failure on $DATE"
+set FROM macports-mgr@lists.macosforge.org
+set HEADERS "To: $SPAM_LOVERS\r\nFrom: $FROM\r\nSubject: $SUBJECT\r\n\r\n"
+
+# We first initialize the runlog with proper mail headers
+puts $runlog_fd $HEADERS
 
 # House keeping on exit.
 proc cleanup {args} {
@@ -90,10 +96,6 @@ proc terminate {exit_status} {
     cleanup runlog
     exit $exit_status
 }
-
-
-# We first initialize the runlog with a proper mail subject.
-puts $runlog_fd "Subject: $subject"
 
 # Check if there are any stray sibling jobs before moving on, bail in such case.
 if {[file exists $lockfile]} {
