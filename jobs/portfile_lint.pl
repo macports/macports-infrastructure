@@ -14,7 +14,7 @@ my $REPOPATH = "/svn/repositories/macports/";
 my $REPOHOST = "http://svn.macosforge.org/repository/macports";
 my $SVNLOOK = "/opt/local/bin/svnlook";
 my $PORTCMD = "/opt/local/bin/port";
-my $SVN = "/opt/local/bin/svn -q --non-interactive";
+my $SVN = "/opt/local/bin/svn -Nq --non-interactive";
 my $MKDIR = "/bin/mkdir -p";
 
 
@@ -22,6 +22,8 @@ my $rev = $ARGV[0] or usage();
 my $TMPROOT = "/tmp/mp_lint/$rev";
 
 my @changes = `$SVNLOOK changed $REPOPATH -r $rev`;
+
+_log("Rev: $rev");
 
 foreach my $change (@changes) {
     if ($change =~ /Portfile/) { 
@@ -35,6 +37,8 @@ foreach my $change (@changes) {
 	# get the group directory
 	my $group = $change;
 	$group =~ s/^.*\/([^\/]+)\/[^\/]+\/Portfile$/$1/g;	
+
+	_log("Port: $group / $port ");
 
 	# make a temporary work area
 	`$MKDIR $TMPROOT/$group/$port`;
@@ -55,12 +59,15 @@ sub _lint {
     my $errors = `$PORTCMD -qc lint`;
 
     if ($errors) {
+        _log("Error: $errors ");
 	my $maintainers = `$PORTCMD -q info --maintainer $port`;
 	# strip everything but the email addresses
 	$maintainers =~ s/maintainer: //;
 	$maintainers =~ s/openmaintainer\@macports.org//;
 	$maintainers =~ s/nomaintainer\@macports.org//;
 	chop($maintainers);
+
+	_log("Maintainers: $maintainers ");
 
 	_mail($port, $maintainers, $errors);
     }
@@ -72,19 +79,25 @@ sub _mail {
     my %mail = (
 	     To => $maintainers,
 	     From => 'noreply@macports.org',
-	     Subject => "[MacPorts Lint] Portfile Lint Errors for: $port",
-	     Message => "Portfile: $port \n\n\n Errors: $errors \n\n",
+	     Subject => "[$rev] $port Lint Report",
+	     Message => "Portfile: $port\n\n\n$errors \n\n",
 	     smtp => 'relay.apple.com',
 	     );
 
+    _log("Mailto: $maintainers ");
+
     sendmail(%mail) or die $Mail::Sendmail::error;
+}
+
+sub _log {
+	my ($errors) = @_;
+	open(LOG, ">>$TMPROOT/errors") or return;
+	print LOG "$errors\n";
+	close(LOG);
 }
 
 sub usage {
 	print "usage: portfile_lint.pl <rev>\n";
 	exit();
 }
-
-
-
 
