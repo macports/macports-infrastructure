@@ -23,6 +23,9 @@ my $TMPROOT = "/tmp/mp_lint/$rev";
 
 my @changes = `$SVNLOOK changed $REPOPATH -r $rev`;
 
+my $author = `$SVNLOOK author $REPOPATH -r $rev`;
+chomp($author);
+
 _log("Rev: $rev");
 
 foreach my $change (@changes) {
@@ -77,7 +80,7 @@ sub _mail {
     my ($port, $maintainers, $errors) = @_;
 
     my %mail = (
-	     To => $maintainers,
+	     To => "$author, $maintainers",
 	     From => 'noreply@macports.org',
 	     Subject => "[$rev] $port Lint Report",
 	     Message => "Portfile: $port\n\n\n$errors \n\n",
