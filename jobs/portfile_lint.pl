@@ -59,7 +59,7 @@ foreach my $change (@changes) {
 
 sub _lint {
     my ($port) = @_; 
-    my $errors = `$PORTCMD -qc lint`;
+    my $errors = `$PORTCMD -qc lint 2>&1`;
 
     if ($errors) {
         _log("Error: $errors ");
