@@ -66,7 +66,7 @@ set lockfile "/tmp/portsdb.lock"
 set mailprog "/usr/sbin/sendmail"
 set DATE [clock format [clock seconds] -format "%A %Y-%m-%d at %T"]
 
-set SPAM_LOVERS macports-dev@lists.macosforge.org
+set SPAM_LOVERS PortIndex2MySQL@ryandesign.com
 
 set SUBJECT "PortIndex2MySQL run failure on $DATE"
 set FROM macports-mgr@lists.macosforge.org
@@ -193,7 +193,7 @@ set sqlfile "/tmp/portsdb.sql"
 set portsdb_host localhost
 set portsdb_name macports
 set portsdb_user macports
-set passwdfile "/opt/local/share/macports/resources/portmgr/password_file"
+set passwdfile "/Users/rschmidt/macports/password_file"
 set portsdb_passwd [getpasswd $passwdfile]
 set portsdb_cmd [macports::findBinary mysql5]
 
