@@ -58,7 +58,13 @@ if [ -d ${TBASE}/.svn ]; then
 else
     ${SVN} checkout ${SVNURL}/trunk/base ${TBASE}
 fi
+
+# Delete old exports if they exist
+if [ -d ${TBASE}-export ]; then
+    $RM -rf ${TBASE}-export;
+fi
 ${SVN} export ${TBASE} ${TBASE}-export
+
 if [ ! -d ${RSYNCROOT}/trunk/base ]; then
     ${MKDIR} -p ${RSYNCROOT}/trunk
 fi
@@ -76,7 +82,13 @@ if [ -d ${RBASE}/.svn ]; then
 else
     ${SVN} checkout ${RELEASE_URL} ${RBASE}
 fi
+
+# Delete old exports if they exist
+if [ -d ${RBASE}-export ]; then
+    $RM -rf ${RBASE}-export;
+fi
 ${SVN} export ${RBASE} ${RBASE}-export
+
 if [ ! -d ${RSYNCROOT}/release/base ]; then
     ${MKDIR} -p ${RSYNCROOT}/release/base
 fi
@@ -89,7 +101,13 @@ if [ -d ${PORTS}/.svn ]; then
 else
     ${SVN} checkout ${SVNURL}/trunk/dports ${PORTS}
 fi
+
+# Delete old exports if they exist
+if [ -d ${PORTS}-export ]; then
+    $RM -rf ${PORTS}-export;
+fi
 ${SVN} export ${PORTS} ${PORTS}-export
+
 if [ ! -d ${RSYNCROOT}/release/ports ]; then
     ${MKDIR} -p ${RSYNCROOT}/release/ports
 fi
