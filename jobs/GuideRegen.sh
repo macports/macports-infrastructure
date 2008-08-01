@@ -61,8 +61,12 @@ else
         || { echo "Checking out the doc tree from $REPO_BASE/trunk/doc-new failed." >> $FAILURE_LOG; bail ; }
 fi
 
-# (re)build
+# build single html version
 { cd ${SRCTREE}/doc-new && $MAKE guide > $FAILURE_LOG 2>&1 ; } \
+    || { echo "make failed." >> $FAILURE_LOG ; bail ; }
+
+# build chunked version 
+{ cd ${SRCTREE}/doc-new && $MAKE guide-chunked > $FAILURE_LOG 2>&1 ; } \
     || { echo "make failed." >> $FAILURE_LOG ; bail ; }
 
 # At this point the guide was regen'd successfuly, so we cleanup before we exit.
