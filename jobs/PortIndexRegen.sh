@@ -47,7 +47,7 @@ bail () {
     cleanup; exit 1
 }
 
-# Cleanup fuction for runtime files.
+# Cleanup function for runtime files.
 cleanup () {
     rm -f $COMMIT_MSG $FAILURE_LOG
     rm -f $LOCKFILE
