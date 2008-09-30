@@ -234,25 +234,25 @@ proc sql_escape {str} {
 # Initial creation of database tables: log, portfiles, categories, maintainers, dependencies, variants and platforms.
 # Do we need any other?
 puts $sqlfile_fd "DROP TABLE IF EXISTS log;"
-puts $sqlfile_fd "CREATE TABLE log (activity VARCHAR(255), activity_time TIMESTAMP(14));"
+puts $sqlfile_fd "CREATE TABLE log (activity VARCHAR(255), activity_time TIMESTAMP(14)) DEFAULT CHARSET=utf8;"
 
 puts $sqlfile_fd "DROP TABLE IF EXISTS portfiles;"
-puts $sqlfile_fd "CREATE TABLE portfiles (name VARCHAR(255) PRIMARY KEY NOT NULL, path VARCHAR(255), version VARCHAR(255),  description TEXT);"
+puts $sqlfile_fd "CREATE TABLE portfiles (name VARCHAR(255) PRIMARY KEY NOT NULL, path VARCHAR(255), version VARCHAR(255),  description TEXT) DEFAULT CHARSET=utf8;"
 
 puts $sqlfile_fd "DROP TABLE IF EXISTS categories;"
-puts $sqlfile_fd "CREATE TABLE categories (portfile VARCHAR(255), category VARCHAR(255), is_primary INTEGER);"
+puts $sqlfile_fd "CREATE TABLE categories (portfile VARCHAR(255), category VARCHAR(255), is_primary INTEGER) DEFAULT CHARSET=utf8;"
 
 puts $sqlfile_fd "DROP TABLE IF EXISTS maintainers;"
-puts $sqlfile_fd "CREATE TABLE maintainers (portfile VARCHAR(255), maintainer VARCHAR(255), is_primary INTEGER);"
+puts $sqlfile_fd "CREATE TABLE maintainers (portfile VARCHAR(255), maintainer VARCHAR(255), is_primary INTEGER) DEFAULT CHARSET=utf8;"
 
 puts $sqlfile_fd "DROP TABLE IF EXISTS dependencies;"
-puts $sqlfile_fd "CREATE TABLE dependencies (portfile VARCHAR(255), library VARCHAR(255));"
+puts $sqlfile_fd "CREATE TABLE dependencies (portfile VARCHAR(255), library VARCHAR(255)) DEFAULT CHARSET=utf8;"
 
 puts $sqlfile_fd "DROP TABLE IF EXISTS variants;"
-puts $sqlfile_fd "CREATE TABLE variants (portfile VARCHAR(255), variant VARCHAR(255));"
+puts $sqlfile_fd "CREATE TABLE variants (portfile VARCHAR(255), variant VARCHAR(255)) DEFAULT CHARSET=utf8;"
 
 puts $sqlfile_fd "DROP TABLE IF EXISTS platforms;"
-puts $sqlfile_fd "CREATE TABLE platforms (portfile VARCHAR(255), platform VARCHAR(255));"
+puts $sqlfile_fd "CREATE TABLE platforms (portfile VARCHAR(255), platform VARCHAR(255)) DEFAULT CHARSET=utf8;"
 
 
 # Iterate over each matching port, extracting its information from the
