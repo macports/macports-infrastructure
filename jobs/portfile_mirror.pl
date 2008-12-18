@@ -1,13 +1,14 @@
 #!/opt/local/bin/perl -w
-###
+##
 # Run "port mirror" for all Portfiles changed in a given revision
 # Created by William Siegrist,
 # e-mail: wsiegrist@apple.com
 # $Id$
-###
-
+##
 use strict;
 use Mail::Sendmail;
+
+my $EXCLUSIONS = ('molden');
 
 my $REPOPATH = "/svn/repositories/macports/";
 my $REPOHOST = "http://svn.macosforge.org/repository/macports";
@@ -30,6 +31,10 @@ foreach my $change (@changes) {
 	my $port = $change;
 	$port =~ s/^.*\/([^\/]+)\/Portfile$/$1/g;
 
+	if (in_array($port, $EXCLUSIONS)) {
+		die("Port exclusion: $port \n"); 
+	}
+
 	# get the group directory
 	my $group = $change;
 	$group =~ s/^.*\/([^\/]+)\/[^\/]+\/Portfile$/$1/g;	
@@ -38,7 +43,7 @@ foreach my $change (@changes) {
 	`$MKDIR $TMPROOT/$group/$port`;
 	chdir("$TMPROOT/$group/$port") or die("Failed to change dir for port: $port");	
 	`$SVN co $REPOHOST/trunk/dports/$group/$port/ .`;
-	
+	# test the port
 	_mirror($port);
     }
 }
@@ -83,6 +88,15 @@ sub usage {
 	exit();
 }
 
+sub in_array {
+	my ($needle, @haystack) = @_;
 
+	foreach my $element (@haystack) {
+		if ($element eq $needle) {
+			return 1;
+		}
+	}	
+	return 0;
+}
 
 
