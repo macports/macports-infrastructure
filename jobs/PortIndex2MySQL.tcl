@@ -66,7 +66,7 @@ set lockfile "/tmp/portsdb.lock"
 set mailprog "/usr/sbin/sendmail"
 set DATE [clock format [clock seconds] -format "%A %Y-%m-%d at %T"]
 
-set SPAM_LOVERS macports-dev@lists.macosforge.org
+#set SPAM_LOVERS example@hostname.com
 
 set SUBJECT "PortIndex2MySQL run failure on $DATE"
 set FROM macports-mgr@lists.macosforge.org
