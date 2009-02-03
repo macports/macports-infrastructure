@@ -35,6 +35,7 @@ set -e
 
 # Commands we need:
 SVN="/opt/local/bin/svn -q --non-interactive"
+CLEANUP="/opt/local/bin/svn --non-interactive cleanup"
 RSYNC="/usr/bin/rsync -q"
 RM="/bin/rm"
 MKDIR="/bin/mkdir"
@@ -51,6 +52,10 @@ RSYNCROOT=/Volumes/data/rsync/macports
 SVNURL=http://svn.macports.org/repository/macports
 RELEASE_URL_FILE=config/RELEASE_URL
 
+# cleanup up the working copy if it is locked
+if [ -f ${TBASE}/.svn/lock ]; then
+    ${CLEANUP} ${TBASE}
+fi
 
 # Update/checkout trunk's base, export and rsync it to the rsync repos location (${RSYNCROOT}):
 if [ -d ${TBASE}/.svn ]; then
@@ -94,10 +99,14 @@ if [ ! -d ${RSYNCROOT}/release/base ]; then
 fi
 ${RSYNC} -a -I --delete ${RBASE}-export/ ${RSYNCROOT}/release/base && ${RM} -rf ${RBASE}-export
 
+# clean up the working copy if it is locked
+if [ -f ${PORTS}/.svn/lock ]; then
+      ${CLEANUP} ${PORTS}
+fi
 
 # Update/checkout the ports tree, export it and rsync it to ${RSYNCROOT}/release/ports:
 if [ -d ${PORTS}/.svn ]; then
-  ${SVN} update ${PORTS}  
+    ${SVN} update ${PORTS}  
 else
     ${SVN} checkout ${SVNURL}/trunk/dports ${PORTS}
 fi
@@ -126,3 +135,4 @@ if [ ! -h trunk/dports ]; then
     cd trunk
     ${RM} -rf dports && ${LN} -s ../release/ports dports
 fi
+
