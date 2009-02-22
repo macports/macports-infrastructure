@@ -127,7 +127,7 @@ tail -n 5 $FAILURE_LOG > $COMMIT_MSG
 echo "" >> $COMMIT_MSG
 grep Failed $FAILURE_LOG >> $COMMIT_MSG
 { cd ${SRCTREE}/dports/ && \
-    $SVN --config-dir $SVN_CONFIG_DIR commit -F $COMMIT_MSG PortIndex > $FAILURE_LOG 2>&1 ; } \
+    $SVN --config-dir $SVN_CONFIG_DIR commit -F $COMMIT_MSG PortIndex PortIndex.quick > $FAILURE_LOG 2>&1 ; } \
     || { echo "SVN commit failed." >> $FAILURE_LOG ; bail ; }
 
 # At this point the index was committed successfuly, so we cleanup before we exit.
