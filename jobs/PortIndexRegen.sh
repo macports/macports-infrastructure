@@ -23,7 +23,6 @@ MP_GROUP=mp-user
 # Other settings (probably don't need to be changed).
 SVN_CONFIG_DIR=${ROOT}/svnconfig
 REPO_BASE=http://svn.macports.org/repository/macports
-RELEASE_URL_FILE="config/RELEASE_URL"
 SVN="/opt/local/bin/svn -q --non-interactive --config-dir $SVN_CONFIG_DIR"
 # Where to checkout the source code. This needs to exist!
 SRCTREE=${ROOT}/source
@@ -80,22 +79,10 @@ else
        || { echo "Checking out the trunk from $REPO_BASE/trunk/base failed." >> $FAILURE_LOG ; bail ; }
 fi
 
-# Extract the release URL from HEAD
-read RELEASE_URL < ${ROOT}/${TMPDIR}/${RELEASE_URL_FILE}
-[ -n ${RELEASE_URL} ] || { echo "no RELEASE_URL specified in svn HEAD." >> $FAILURE_LOG; bail ; }
-
-# Checkout/update the release base
-if [ -d ${SRCTREE}/base ]; then
-    $SVN switch ${RELEASE_URL} ${SRCTREE}/base > $FAILURE_LOG 2>&1 \
-	|| { echo "Updating base from ${RELEASE_URL} failed." >> $FAILURE_LOG; bail ; }
-else
-    $SVN checkout ${RELEASE_URL} ${SRCTREE}/base > $FAILURE_LOG 2>&1 \
-	|| { echo "Checking out base from ${RELEASE_URL} failed." >> $FAILURE_LOG ; bail ; }
-fi
 echo `date -u +%s` > ${ROOT}/BASE-TIMESTAMP
 
 # (re)configure.
-cd ${SRCTREE}/base/ && \
+cd ${ROOT}/${TMPDIR} && \
     mkdir -p ${TCLPKG} && \
     ./configure \
     --prefix=${PREFIX} \
@@ -106,15 +93,15 @@ cd ${SRCTREE}/base/ && \
 
 # clean
 # (cleaning is useful because we don't want the indexing to fail because dependencies aren't properly computed).
-{ cd ${SRCTREE}/base/ && make clean > $FAILURE_LOG 2>&1 ; } \
+{ cd ${ROOT}/${TMPDIR} && make clean > $FAILURE_LOG 2>&1 ; } \
     || { echo "make clean failed." >> $FAILURE_LOG ; bail ; }
 
 # (re)build
-{ cd ${SRCTREE}/base/ && make > $FAILURE_LOG 2>&1 ; } \
+{ cd ${ROOT}/${TMPDIR} && make > $FAILURE_LOG 2>&1 ; } \
     || { echo "make failed." >> $FAILURE_LOG ; bail ; }
 
 # (re)install
-{ cd ${SRCTREE}/base/ && make install > $FAILURE_LOG 2>&1 ; } \
+{ cd ${ROOT}/${TMPDIR} && make install > $FAILURE_LOG 2>&1 ; } \
     || { echo "make install failed." >> $FAILURE_LOG ; bail ; }
 
 # (re)index
