@@ -289,6 +289,16 @@ foreach {name array} $ports {
     } else {
         set variants ""
     }
+    if {[info exists portinfo(depends_fetch)]} {
+        set depends_fetch $portinfo(depends_fetch)
+    } else {
+        set depends_fetch ""
+    }
+    if {[info exists portinfo(depends_extract)]} {
+        set depends_extract $portinfo(depends_extract)
+    } else {
+        set depends_extract ""
+    }
     if {[info exists portinfo(depends_build)]} {
         set depends_build $portinfo(depends_build)
     } else {
@@ -324,6 +334,16 @@ foreach {name array} $ports {
         set maintainer [sql_escape $maintainer]
         puts $sqlfile_fd "INSERT INTO maintainers VALUES ('$portname', '$maintainer', $primary);"
         set primary 0
+    }
+
+    foreach fetch_dep $depends_fetch {
+        set fetch_dep [sql_escape $fetch_dep]
+        puts $sqlfile_fd "INSERT INTO dependencies VALUES ('$portname', '$fetch_dep');"
+    }
+    
+    foreach extract_dep $depends_extract {
+        set extract_dep [sql_escape $extract_dep]
+        puts $sqlfile_fd "INSERT INTO dependencies VALUES ('$portname', '$extract_dep');"
     }
 
     foreach build_dep $depends_build {
