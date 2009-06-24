@@ -48,7 +48,7 @@
 # meaningful, which is accomplished simply by calling the 'mportsync' proc in macports1.0
 # (which updates the ports tree in use) and by installing the script on cron/launchd to be
 # run on a timely schedule (not any more frequent than the run of the PortIndexRegen.sh
-# script on that creates a new PortIndex file, which is every twelve hours).
+# script on that creates a new PortIndex file).
 #
 # Remaining requirement to successfully run this script is performing the necessary
 # MySQL admin tasks on the host box to create the database in the first place and the
@@ -72,8 +72,13 @@ set SUBJECT "PortIndex2MySQL run failure on $DATE"
 set FROM macports-mgr@lists.macosforge.org
 set HEADERS "To: $SPAM_LOVERS\r\nFrom: $FROM\r\nSubject: $SUBJECT\r\n\r\n"
 
-# We first initialize the runlog with proper mail headers
-puts $runlog_fd $HEADERS
+# handle command line arguments
+set create_tables false
+if {[llength $argv]} {
+    if {[lindex $argv 0] == "--create-tables"} {
+        set create_tables true
+    }
+}
 
 # House keeping on exit.
 proc cleanup {args} {
@@ -95,29 +100,6 @@ proc terminate {exit_status} {
     }
     cleanup runlog
     exit $exit_status
-}
-
-# Check if there are any stray sibling jobs before moving on, bail in such case.
-if {[file exists $lockfile]} {
-    puts $runlog_fd "PortIndex2MySQL lock file found, is another job running?" 
-    terminate 1
-} else {
-    set lockfile_fd [open $lockfile a]
-}
-
-
-# Load macports1.0 so that we can use some of its procs and the portinfo array.
-if {[catch { source [file join "@TCL_PACKAGE_DIR@" macports1.0 macports_fastload.tcl] } errstr]} {
-    puts $runlog_fd "${::errorInfo}"
-    puts $runlog_fd "Failed to locate the macports1.0 Tcl package file: $errstr"
-    cleanup lockfile
-    terminate 1
-}
-if {[catch { package require macports } errstr]} {
-    puts $runlog_fd "${::errorInfo}"
-    puts $runlog_fd "Failed to load the macports1.0 Tcl package: $errstr"
-    cleanup lockfile
-    terminate 1
 }
 
 # macports1.0 UI instantiation to route information/error messages wherever we want.
@@ -157,18 +139,6 @@ proc ui_channels {priority} {
     }
 }
 
-# Initialize macports1.0 and its UI, in order to find the sources.conf file
-# (which is what will point us to the PortIndex we're gonna use) and use
-# the runtime information.
-array set ui_options {ports_verbose yes}
-if {[catch {mportinit ui_options} errstr]} {
-    puts $runlog_fd "${::errorInfo}"
-    puts $runlog_fd "Failed to initialize MacPorts: $errstr"
-    cleanup lockfile
-    terminate 1
-}
-
-
 # Procedure to catch the database password from a protected file.
 proc getpasswd {passwdfile} {
     if {[catch {open $passwdfile r} passwdfile_fd]} {
@@ -187,6 +157,51 @@ proc getpasswd {passwdfile} {
     close $passwdfile_fd
     return $passwd
 }
+
+# SQL string escaping.
+proc sql_escape {str} {
+    regsub -all -- {'} $str {\\'} str
+    regsub -all -- {"} $str {\\"} str
+    regsub -all -- {\n} $str {\\n} str
+    return $str
+}
+
+# We first initialize the runlog with proper mail headers
+puts $runlog_fd $HEADERS
+
+# Check if there are any stray sibling jobs before moving on, bail in such case.
+if {[file exists $lockfile]} {
+    puts $runlog_fd "PortIndex2MySQL lock file found, is another job running?" 
+    terminate 1
+} else {
+    set lockfile_fd [open $lockfile a]
+}
+
+# Load macports1.0 so that we can use some of its procs and the portinfo array.
+if {[catch { source [file join "/Library/Tcl" macports1.0 macports_fastload.tcl] } errstr]} {
+    puts $runlog_fd "${::errorInfo}"
+    puts $runlog_fd "Failed to locate the macports1.0 Tcl package file: $errstr"
+    cleanup lockfile
+    terminate 1
+}
+if {[catch { package require macports } errstr]} {
+    puts $runlog_fd "${::errorInfo}"
+    puts $runlog_fd "Failed to load the macports1.0 Tcl package: $errstr"
+    cleanup lockfile
+    terminate 1
+}
+
+# Initialize macports1.0 and its UI, in order to find the sources.conf file
+# (which is what will point us to the PortIndex we're gonna use) and use
+# the runtime information.
+array set ui_options {ports_verbose yes}
+if {[catch {mportinit ui_options} errstr]} {
+    puts $runlog_fd "${::errorInfo}"
+    puts $runlog_fd "Failed to initialize MacPorts: $errstr"
+    cleanup lockfile
+    terminate 1
+}
+
 
 # Database abstraction variables:
 set sqlfile "/tmp/portsdb.sql"
@@ -222,39 +237,40 @@ if {[catch {set ports [mportsearch ".+"]} errstr]} {
     terminate 1
 }
 
-
-# SQL string escaping.
-proc sql_escape {str} {
-    regsub -all -- {'} $str {\\'} str
-    regsub -all -- {"} $str {\\"} str
-    regsub -all -- {\n} $str {\\n} str
-    return $str
+if {$create_tables} {
+    # Initial creation of database tables: log, portfiles, categories, maintainers, dependencies, variants and platforms.
+    # Do we need any other?
+    puts $sqlfile_fd "DROP TABLE IF EXISTS log;"
+    puts $sqlfile_fd "CREATE TABLE log (activity VARCHAR(255), activity_time TIMESTAMP(14)) DEFAULT CHARSET=utf8;"
+    
+    puts $sqlfile_fd "DROP TABLE IF EXISTS portfiles;"
+    puts $sqlfile_fd "CREATE TABLE portfiles (name VARCHAR(255) PRIMARY KEY NOT NULL, path VARCHAR(255), version VARCHAR(255),  description TEXT) DEFAULT CHARSET=utf8;"
+    
+    puts $sqlfile_fd "DROP TABLE IF EXISTS categories;"
+    puts $sqlfile_fd "CREATE TABLE categories (portfile VARCHAR(255), category VARCHAR(255), is_primary INTEGER) DEFAULT CHARSET=utf8;"
+    
+    puts $sqlfile_fd "DROP TABLE IF EXISTS maintainers;"
+    puts $sqlfile_fd "CREATE TABLE maintainers (portfile VARCHAR(255), maintainer VARCHAR(255), is_primary INTEGER) DEFAULT CHARSET=utf8;"
+    
+    puts $sqlfile_fd "DROP TABLE IF EXISTS dependencies;"
+    puts $sqlfile_fd "CREATE TABLE dependencies (portfile VARCHAR(255), library VARCHAR(255)) DEFAULT CHARSET=utf8;"
+    
+    puts $sqlfile_fd "DROP TABLE IF EXISTS variants;"
+    puts $sqlfile_fd "CREATE TABLE variants (portfile VARCHAR(255), variant VARCHAR(255)) DEFAULT CHARSET=utf8;"
+    
+    puts $sqlfile_fd "DROP TABLE IF EXISTS platforms;"
+    puts $sqlfile_fd "CREATE TABLE platforms (portfile VARCHAR(255), platform VARCHAR(255)) DEFAULT CHARSET=utf8;"
+} else {
+    # if we are not creating tables from scratch, remove the old data
+    puts $sqlfile_fd "TRUNCATE log;"
+    puts $sqlfile_fd "TRUNCATE portfiles;"
+    puts $sqlfile_fd "TRUNCATE categories;"
+    puts $sqlfile_fd "TRUNCATE maintainers;"
+    puts $sqlfile_fd "TRUNCATE dependencies;"
+    puts $sqlfile_fd "TRUNCATE variants;"
+    puts $sqlfile_fd "TRUNCATE platforms;"
 }
-
-# Initial creation of database tables: log, portfiles, categories, maintainers, dependencies, variants and platforms.
-# Do we need any other?
-puts $sqlfile_fd "DROP TABLE IF EXISTS log;"
-puts $sqlfile_fd "CREATE TABLE log (activity VARCHAR(255), activity_time TIMESTAMP(14)) DEFAULT CHARSET=utf8;"
-
-puts $sqlfile_fd "DROP TABLE IF EXISTS portfiles;"
-puts $sqlfile_fd "CREATE TABLE portfiles (name VARCHAR(255) PRIMARY KEY NOT NULL, path VARCHAR(255), version VARCHAR(255),  description TEXT) DEFAULT CHARSET=utf8;"
-
-puts $sqlfile_fd "DROP TABLE IF EXISTS categories;"
-puts $sqlfile_fd "CREATE TABLE categories (portfile VARCHAR(255), category VARCHAR(255), is_primary INTEGER) DEFAULT CHARSET=utf8;"
-
-puts $sqlfile_fd "DROP TABLE IF EXISTS maintainers;"
-puts $sqlfile_fd "CREATE TABLE maintainers (portfile VARCHAR(255), maintainer VARCHAR(255), is_primary INTEGER) DEFAULT CHARSET=utf8;"
-
-puts $sqlfile_fd "DROP TABLE IF EXISTS dependencies;"
-puts $sqlfile_fd "CREATE TABLE dependencies (portfile VARCHAR(255), library VARCHAR(255)) DEFAULT CHARSET=utf8;"
-
-puts $sqlfile_fd "DROP TABLE IF EXISTS variants;"
-puts $sqlfile_fd "CREATE TABLE variants (portfile VARCHAR(255), variant VARCHAR(255)) DEFAULT CHARSET=utf8;"
-
-puts $sqlfile_fd "DROP TABLE IF EXISTS platforms;"
-puts $sqlfile_fd "CREATE TABLE platforms (portfile VARCHAR(255), platform VARCHAR(255)) DEFAULT CHARSET=utf8;"
-
-
+ 
 # Iterate over each matching port, extracting its information from the
 # portinfo array.
 foreach {name array} $ports {
@@ -376,7 +392,6 @@ foreach {name array} $ports {
 # Mark the db regen as done only once we're done processing all ports:
 puts $sqlfile_fd "INSERT INTO log VALUES ('update', NOW());"
 
-
 # Pipe the contents of the generated sql file to the database command,
 # reading from the file descriptor for the raw sql file to assure completeness.
 if {[catch {seek $sqlfile_fd 0 start} errstr]} {
@@ -384,13 +399,13 @@ if {[catch {seek $sqlfile_fd 0 start} errstr]} {
     cleanup sqlfile lockfile
     terminate 1
 }
+
 if {[catch {exec -- $portsdb_cmd --host=$portsdb_host --user=$portsdb_user --password=$portsdb_passwd --database=$portsdb_name <@ $sqlfile_fd} errstr]} {
     ui_error "${::errorCode}: $errstr"
     cleanup sqlfile lockfile
     terminate 1
 }
 
-
-# And we're done regen'ing the MacPorts dabase! Cleanup and exit successfully.
+# done regenerating the database. Cleanup and exit successfully.
 cleanup sqlfile lockfile
 terminate 0
