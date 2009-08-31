@@ -73,7 +73,7 @@ set FROM macports-mgr@lists.macosforge.org
 set HEADERS "To: $SPAM_LOVERS\r\nFrom: $FROM\r\nSubject: $SUBJECT\r\n\r\n"
 
 # handle command line arguments
-set create_tables false
+set create_tables true
 if {[llength $argv]} {
     if {[lindex $argv 0] == "--create-tables"} {
         set create_tables true
@@ -260,6 +260,9 @@ if {$create_tables} {
     
     puts $sqlfile_fd "DROP TABLE IF EXISTS platforms;"
     puts $sqlfile_fd "CREATE TABLE platforms (portfile VARCHAR(255), platform VARCHAR(255)) DEFAULT CHARSET=utf8;"
+
+    puts $sqlfile_fd "DROP TABLE IF EXISTS licenses;"
+    puts $sqlfile_fd "CREATE TABLE licenses (portfile VARCHAR(255), license VARCHAR(255)) DEFAULT CHARSET=utf8;"
 } else {
     # if we are not creating tables from scratch, remove the old data
     puts $sqlfile_fd "TRUNCATE log;"
@@ -269,6 +272,7 @@ if {$create_tables} {
     puts $sqlfile_fd "TRUNCATE dependencies;"
     puts $sqlfile_fd "TRUNCATE variants;"
     puts $sqlfile_fd "TRUNCATE platforms;"
+    puts $sqlfile_fd "TRUNCATE licenses;"
 }
  
 # Iterate over each matching port, extracting its information from the
@@ -335,6 +339,11 @@ foreach {name array} $ports {
     } else {
         set platforms ""
     }
+    if {[info exists portinfo(license)]} {
+        set licenses $portinfo(license)
+    } else {
+        set licenses ""
+    }
 
     puts $sqlfile_fd "INSERT INTO portfiles VALUES ('$portname', '$portdir', '$portversion', '$description');"
 
@@ -385,6 +394,11 @@ foreach {name array} $ports {
     foreach platform $platforms {
         set platform [sql_escape $platform]
         puts $sqlfile_fd "INSERT INTO platforms VALUES ('$portname', '$platform');"
+    }
+
+    foreach license $licenses {
+        set license [sql_escape $license]
+        puts $sqlfile_fd "INSERT INTO licenses VALUES ('$portname', '$license');"
     }
 
 }
