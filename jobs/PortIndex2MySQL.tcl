@@ -230,7 +230,7 @@ if {[catch {mportsync} errstr]} {
 }
 
 # Load every port in the index through a search that matches everything.
-if {[catch {set ports [mportsearch ".+"]} errstr]} {
+if {[catch {set ports [mportlistall]} errstr]} {
     ui_error "${::errorInfo}"
     ui_error "port search failed: $errstr"
     cleanup sqlfile lockfile
