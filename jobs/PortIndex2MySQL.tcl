@@ -178,7 +178,7 @@ if {[file exists $lockfile]} {
 }
 
 # Load macports1.0 so that we can use some of its procs and the portinfo array.
-if {[catch { source [file join "/Library/Tcl" macports1.0 macports_fastload.tcl] } errstr]} {
+if {[catch { source [file join "@macports_tcl_dir@" macports1.0 macports_fastload.tcl] } errstr]} {
     puts $runlog_fd "${::errorInfo}"
     puts $runlog_fd "Failed to locate the macports1.0 Tcl package file: $errstr"
     cleanup lockfile

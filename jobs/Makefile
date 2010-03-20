@@ -3,7 +3,7 @@
 SCRIPTS=	PortIndex2MySQL
 
 edit = sed \
-	-e 's,@TCL_PACKAGE_DIR@,$(TCL_PACKAGE_DIR),g'
+	-e 's,@macports_tcl_dir@,$(macports_tcl_dir),g'
 
 
 include ../../Mk/macports.autoconf.mk
