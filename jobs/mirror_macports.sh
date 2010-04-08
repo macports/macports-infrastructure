@@ -49,6 +49,16 @@ do
     $PORT mirror $P +$V; 
   done
 
+  # mirror with each platform (can exclude the one the server is running)
+  for VERS in "8 9 10";
+  do
+    for ARCH in "i386 powerpc";
+    do
+      echo "Mirroring ${P} with platform darwin ${VERS} ${ARCH}"
+      $PORT mirror $P os.major=${VERS} os.arch=${ARCH}
+    done
+  done
+
   # clean up the work area
   $PORT clean --work $P;
 
