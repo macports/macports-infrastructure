@@ -41,7 +41,7 @@ do
   $PORT mirror $P;
 
   # for each variant
-  for V in `$PORT variants $P | $GREP -v 'has no variants' | $GREP -v 'has the variants' | $CUT -d " " -f 1 | $CUT -d ":" -f 1 | $GREP -v universal | $XARGS`;
+  for V in `$PORT -q variants $P | $CUT -d " " -f 1 | $CUT -d ":" -f 1 | $GREP -v universal | $XARGS`;
   do
     # mirror with each variant
     echo "Mirroring ${P} +${V}";
