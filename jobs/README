@@ -4,12 +4,8 @@ appart from the basic mail, mailman, www, trac & svn services:
 
  1) mprsyncup:
     Runs on Mac OS Forge servers every 30 minutes, on the hour and on the half hour, off launchd through the org.macports.mprsyncup.plist provided.
-    Repopulates the rsync modules that feed the "sync" and "selfupdate" operations for both the ports tree and MacPorts sources, freshly off the svn
-    sources.
-
- 2) PortIndexRegen:
-    Still running on Daniel's box, twice a day every 12 hours off cron. Scheduled for a rewrite in Tcl to employ the macports1.0 API and thus simplify
-    some of its tasks. Once that's done it'll be moved to Mac OS Forge servers. This job regenerates the ports' index employed by operations like "port search".
+    Repopulates the rsync modules that feed the "sync" and "selfupdate" operations for both the ports tree and MacPorts sources, freshly off the svn sources.
+    Updates the port indexes stored on the rsync server.
 
  3) PortIndex2MySQL:
     Running Mac OS Forge servers twice a day every 12 hours off launchd through the org.macports.PortIndex2MySQL.plist provided, 15 minutes after the
@@ -22,3 +18,4 @@ appart from the basic mail, mailman, www, trac & svn services:
  5) Website:
     There's actually no script for this one, as the job itself is really simple: a post-commit svn hook attached to the /trunk/www dir
     updates the copy of our website on the Mac OS Forge web server whenever a commit to that directory occurs.
+
