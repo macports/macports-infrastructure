@@ -1,6 +1,4 @@
 #!/bin/sh
-
-
 ####
 # Script to checkout/update base sources from both trunk (ToT) and the current
 # release tag (as determined by the base/config/RELEASE_URL file) and a ports
@@ -30,23 +28,38 @@
 # $Id$
 ####
 
-
 set -e
+set -x
 
 # Commands we need:
 SVN="/opt/local/bin/svn -q --non-interactive"
 CLEANUP="/opt/local/bin/svn --non-interactive cleanup"
-RSYNC="/usr/bin/rsync -q"
+RSYNC="/opt/local/bin/rsync -q"
 RM="/bin/rm"
 MKDIR="/bin/mkdir"
 LN="/bin/ln"
 
 # Paths we'll work on:
+ROOT=/var/tmp/macports
+TMPDIR=mp_trunk/base
+PREFIX=${ROOT}/opt/local
+TCLPKG=${PREFIX}/lib/tcl
 SVNROOT=/var/tmp/macports
 TBASE=${SVNROOT}/trunk/base
 RBASE=${SVNROOT}/release/base
 PORTS=${SVNROOT}/release/ports
-RSYNCROOT=/Volumes/data/rsync/macports
+RSYNCROOT=/rsync/macports
+PORTINDEX=${PREFIX}/bin/portindex
+
+PATH=${PREFIX}/bin:/bin:/usr/bin:/usr/sbin:/opt/local/bin
+
+# platforms we generate indexes for
+PLATFORMS="8_ppc 8_i386 9_ppc 9_i386 10_i386"
+# copy new index of this platform to old index location for MP v1.8 compatability
+OLD_INDEX_PLATFORM="9_i386"
+
+MP_USER=nobody
+MP_GROUP=nobody
 
 # Sources information:
 SVNURL=http://svn.macports.org/repository/macports
@@ -64,17 +77,10 @@ else
     ${SVN} checkout ${SVNURL}/trunk/base ${TBASE}
 fi
 
-# Delete old exports if they exist
-if [ -d ${TBASE}-export ]; then
-    $RM -rf ${TBASE}-export;
-fi
-${SVN} export ${TBASE} ${TBASE}-export
-
 if [ ! -d ${RSYNCROOT}/trunk/base ]; then
     ${MKDIR} -p ${RSYNCROOT}/trunk
 fi
-${RSYNC} -a -I --delete ${TBASE}-export/ ${RSYNCROOT}/trunk/base && ${RM} -rf ${TBASE}-export
-
+${RSYNC} -aIC --delete ${TBASE}/ ${RSYNCROOT}/trunk/base
 
 # Read what tag we're releasing from, switch to/checkout a copy, export and rsync it to ${RSYNCROOT}/release/base:
 read RELEASE_URL < ${TBASE}/${RELEASE_URL_FILE}
@@ -88,16 +94,10 @@ else
     ${SVN} checkout ${RELEASE_URL} ${RBASE}
 fi
 
-# Delete old exports if they exist
-if [ -d ${RBASE}-export ]; then
-    $RM -rf ${RBASE}-export;
-fi
-${SVN} export ${RBASE} ${RBASE}-export
-
 if [ ! -d ${RSYNCROOT}/release/base ]; then
     ${MKDIR} -p ${RSYNCROOT}/release/base
 fi
-${RSYNC} -a -I --delete ${RBASE}-export/ ${RSYNCROOT}/release/base && ${RM} -rf ${RBASE}-export
+${RSYNC} -aIC --delete ${RBASE}/ ${RSYNCROOT}/release/base 
 
 # clean up the working copy if it is locked
 if [ -f ${PORTS}/.svn/lock ]; then
@@ -111,26 +111,36 @@ else
     ${SVN} checkout ${SVNURL}/trunk/dports ${PORTS}
 fi
 
-# Delete old exports if they exist
-if [ -d ${PORTS}-export ]; then
-    $RM -rf ${PORTS}-export;
-fi
-${SVN} export ${PORTS} ${PORTS}-export
+# generate platform-specific indexes
+pushd ${PORTS} >> /dev/null
+# build MP trunk in a private location for indexing
+pushd ${ROOT}/${TMPDIR} >> /dev/null
+mkdir -p ${TCLPKG} 
+./configure \
+    --prefix=${PREFIX} \
+    --with-tclpackage=${TCLPKG} \
+    --with-install-user=${MP_USER} \
+    --with-install-group=${MP_GROUP} 
+make clean 
+make
+make install 
+popd
+
+for PLATFORM in $PLATFORMS; do
+	$PORTINDEX -p darwin_${PLATFORM} -o PortIndex_darwin_${PLATFORM};
+done
+
+# support MP 1.8
+cp PortIndex_darwin_${OLD_INDEX_PLATFORM}/* ./
+popd
 
 if [ ! -d ${RSYNCROOT}/release/ports ]; then
     ${MKDIR} -p ${RSYNCROOT}/release/ports
 fi
-${RSYNC} -a -I --delete ${PORTS}-export/ ${RSYNCROOT}/release/ports && ${RM} -rf ${PORTS}-export
+${RSYNC} -aIC --delete ${PORTS}/ ${RSYNCROOT}/release/ports
 
-
-# Compatibility checks:
+# symlink trunk ports to release ports since we only have 1 set of ports
 cd ${RSYNCROOT}
-if [ ! -h dpupdate ]; then
-    ${RM} -rf dpupdate && ${LN} -s trunk dpupdate
-fi
-if [ ! -h dpupdate1 ]; then
-    ${RM} -rf dpupdate1 && ${LN} -s release dpupdate1
-fi
 if [ ! -h trunk/dports ]; then
     cd trunk
     ${RM} -rf dports && ${LN} -s ../release/ports dports
