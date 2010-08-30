@@ -32,7 +32,7 @@ foreach my $change (@changes) {
     if ($change =~ /Portfile/) { 
 	# remove svn status and whitespace
 	chop($change);
-	$change =~ s/\w\s+([\/\w]+)/$1/g; 
+	$change =~ s/[ADU_][\sU]\s\s([\/\w]+)/$1/g;
 	# extract the portname from parent dir of Portfile
 	my $port = $change;
 	$port =~ s/^.*\/([^\/]+)\/Portfile$/$1/g;
