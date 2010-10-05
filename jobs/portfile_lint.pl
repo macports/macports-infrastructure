@@ -13,7 +13,10 @@ use Mail::Sendmail;
 my $REPOPATH = "/svn/repositories/macports/";
 my $REPOHOST = "http://svn.macosforge.org/repository/macports";
 my $SVNLOOK = "/opt/local/bin/svnlook";
+
+# use a release (non-trunk) version of port
 my $PORTCMD = "/opt/local/bin/port";
+
 my $SVN = "/opt/local/bin/svn -Nq --non-interactive";
 my $MKDIR = "/bin/mkdir -p";
 
@@ -29,10 +32,10 @@ chomp($author);
 _log("Rev: $rev");
 
 foreach my $change (@changes) {
-    if ($change =~ /Portfile/) { 
+    if ($change =~ /[AU][\sU]\s\s[\/\w\-_]+Portfile$/) { 
 	# remove svn status and whitespace
 	chop($change);
-	$change =~ s/[ADU_][\sU]\s\s([\/\w]+)/$1/g;
+	$change =~ s/[ADU_][\sU]\s\s([\/\w\-_]+)/$1/g; 
 	# extract the portname from parent dir of Portfile
 	my $port = $change;
 	$port =~ s/^.*\/([^\/]+)\/Portfile$/$1/g;
@@ -41,12 +44,16 @@ foreach my $change (@changes) {
 	my $group = $change;
 	$group =~ s/^.*\/([^\/]+)\/[^\/]+\/Portfile$/$1/g;	
 
+	# get the parent directory of the Portfile
+	my $parent = $change;
+	$parent =~ s/Portfile//;
+
 	_log("Port: $group / $port ");
 
 	# make a temporary work area
 	`$MKDIR $TMPROOT/$group/$port`;
 	chdir("$TMPROOT/$group/$port") or die("Failed to change dir for port: $port");	
-	`$SVN co $REPOHOST/trunk/dports/$group/$port/ .`;
+	`$SVN co -r $rev $REPOHOST/$parent .`;
 	# test the port
 	_lint($port);
     }
@@ -79,11 +86,14 @@ sub _lint {
 sub _mail {
     my ($port, $maintainers, $errors) = @_;
 
+    # remove duplicates, such as a maintainer being the author of the commit
+    $maintainers =~ s/$author//g;
+
     my %mail = (
 	     To => "$author, $maintainers",
 	     From => 'noreply@macports.org',
 	     Subject => "[$rev] $port Lint Report",
-	     Message => "Portfile: $port\n\n\n$errors \n\n",
+	     Message => "Change: http://trac.macports.org/changeset/$rev\nPortfile: $port\n\n$errors \n\n",
 	     smtp => 'relay.apple.com',
 	     );
 
