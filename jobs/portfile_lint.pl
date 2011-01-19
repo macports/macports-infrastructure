@@ -10,6 +10,9 @@
 use strict;
 use Mail::Sendmail;
 
+$ENV{'HOME'} = '/tmp/mp_lint/';
+$ENV{'LANG'} = 'en_US.UTF-8';
+
 my $REPOPATH = "/svn/repositories/macports/";
 my $REPOHOST = "http://svn.macosforge.org/repository/macports";
 my $SVNLOOK = "/opt/local/bin/svnlook";
