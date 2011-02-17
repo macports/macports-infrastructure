@@ -19,8 +19,8 @@ array set portsSeen {}
 set check_deptypes {depends_build depends_lib}
 
 set good_licenses {agpl apache apsl artistic boost bsd cecill cpl curl \
-                   fontconfig freebsd gfdl gpl ibmpl jasper lgpl libpng mit \
-                   mpl openssl php psf qpl public-domain ruby sleepycat \
+                   fontconfig freebsd gfdl gpl ibmpl ijg jasper lgpl libpng \
+                   mit mpl openssl php psf qpl public-domain ruby sleepycat \
                    ssleay x11 zlib zpl}
 foreach lic $good_licenses {
     set license_good($lic) 1
