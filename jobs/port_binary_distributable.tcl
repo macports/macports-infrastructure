@@ -66,7 +66,7 @@ proc infoForPort {portName variantInfo} {
         return {}
     }
     array set portInfo [lindex $portSearchResult 1]
-    set mport [mportopen $portInfo(porturl) {} $variantInfo]
+    set mport [mportopen $portInfo(porturl) [list subport $portName] $variantInfo]
     array unset portInfo
     array set portInfo [mportinfo $mport]
     mportclose $mport
