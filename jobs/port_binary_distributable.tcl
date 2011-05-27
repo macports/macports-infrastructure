@@ -80,7 +80,14 @@ proc infoForPort {portName variantInfo} {
         }
     }
 
-    return [list $dependencyList $portInfo(license)]
+    set ret [list $dependencyList $portInfo(license)]
+    if {[info exists portInfo(installs_libs)]} {
+        lappend ret $portInfo(installs_libs)
+    } else {
+        # when in doubt, assume code from the dep is incorporated
+        lappend ret yes
+    }
+    return $ret
 }
 
 # return license with any trailing dash followed by a number and/or plus sign removed
@@ -116,8 +123,16 @@ proc check_licenses {portName variantInfo verbose} {
     set portList [lindex $top_info 0]
     while {[llength $portList] > 0} {
         set aPort [lindex $portList 0]
+        # mark as seen and remove from the list
+        set portSeen($aPort) 1
+        set portList [lreplace $portList 0 0]
+
         set aPortInfo [infoForPort $aPort $variantInfo]
         set aPortLicense [lindex $aPortInfo 1]
+        set installs_libs [lindex $aPortInfo 2]
+        if {!$installs_libs} {
+            continue
+        }
         foreach full_lic $aPortLicense {
             # check that this dependency's license(s) are good
             set lic [remove_version [string tolower $full_lic]]
@@ -140,9 +155,7 @@ proc check_licenses {portName variantInfo verbose} {
             }
         }
 
-        # mark it seen and add its deps to the list
-        set portSeen($aPort) 1
-        set portList [lreplace $portList 0 0]
+        # add its deps to the list
         foreach possiblyNewPort [lindex $aPortInfo 0] {
             if {![info exists portSeen($possiblyNewPort)]} {
                 lappend portList $possiblyNewPort
