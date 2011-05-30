@@ -17,7 +17,7 @@ ROOT=/var/tmp/macports/
 
 # Other settings (probably don't need to be changed).
 SVN_CONFIG_DIR=${ROOT}/svnconfig
-REPO_BASE=http://svn.macports.org/repository/macports
+REPO_BASE=https://svn.macports.org/repository/macports
 SVN="/opt/local/bin/svn -q --non-interactive --config-dir $SVN_CONFIG_DIR"
 # Where to checkout the source code. This needs to exist!
 SRCTREE=${ROOT}/source

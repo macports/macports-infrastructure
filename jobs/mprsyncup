@@ -62,7 +62,7 @@ MP_USER=nobody
 MP_GROUP=nobody
 
 # Sources information:
-SVNURL=http://svn.macports.org/repository/macports
+SVNURL=https://svn.macports.org/repository/macports
 RELEASE_URL_FILE=config/RELEASE_URL
 
 # cleanup up the working copy if it is locked

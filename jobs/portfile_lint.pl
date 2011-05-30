@@ -14,7 +14,7 @@ $ENV{'HOME'} = '/tmp/mp_lint/';
 $ENV{'LANG'} = 'en_US.UTF-8';
 
 my $REPOPATH = "/svn/repositories/macports/";
-my $REPOHOST = "http://svn.macosforge.org/repository/macports";
+my $REPOHOST = "https://svn.macports.org/repository/macports";
 my $SVNLOOK = "/opt/local/bin/svnlook";
 
 # use a release (non-trunk) version of port
@@ -96,7 +96,7 @@ sub _mail {
 	     To => "$author, $maintainers",
 	     From => 'noreply@macports.org',
 	     Subject => "[$rev] $port Lint Report",
-	     Message => "Change: http://trac.macports.org/changeset/$rev\nPortfile: $port\n\n$errors \n\n",
+	     Message => "Change: https://trac.macports.org/changeset/$rev\nPortfile: $port\n\n$errors \n\n",
 	     smtp => 'relay.apple.com',
 	     );
 

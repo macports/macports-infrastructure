@@ -11,7 +11,7 @@ use Mail::Sendmail;
 my $EXCLUSIONS = ('molden');
 
 my $REPOPATH = "/svn/repositories/macports/";
-my $REPOHOST = "http://svn.macosforge.org/repository/macports";
+my $REPOHOST = "https://svn.macports.org/repository/macports";
 my $SVNLOOK = "/opt/local/bin/svnlook";
 my $PORTCMD = "/opt/local/bin/port";
 my $SVN = "/opt/local/bin/svn -q --non-interactive";
