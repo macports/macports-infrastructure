@@ -38,6 +38,8 @@ RSYNC="/opt/local/bin/rsync -q"
 RM="/bin/rm"
 MKDIR="/bin/mkdir"
 LN="/bin/ln"
+TAR="/usr/bin/tar"
+OPENSSL="/usr/bin/openssl"
 
 # Paths we'll work on:
 ROOT=/var/tmp/macports
@@ -64,6 +66,10 @@ MP_GROUP=nobody
 # Sources information:
 SVNURL=https://svn.macports.org/repository/macports
 RELEASE_URL_FILE=config/RELEASE_URL
+
+# private key to use for signing
+# XXX set real path
+PRIVKEY=""
 
 # cleanup up the working copy if it is locked
 if [ -f ${TBASE}/.svn/lock ]; then
@@ -145,3 +151,23 @@ if [ ! -h trunk/dports ]; then
     cd trunk
     ${RM} -rf dports && ${LN} -s ../release/ports dports
 fi
+
+# generate and sign tarballs of base and dports
+# the signature always needs to match, so we try to make this look atomic to
+# clients by switching a symlink target
+
+TAR_CURDIR=${RSYNCROOT}/release/tarballs_current
+${MKDIR} -p ${TAR_CURDIR}
+cp -pR ${TAR_CURDIR} ${RSYNCROOT}/release/tarballs_old
+${LN} -sf tarballs_old ${RSYNCROOT}/release/tarballs
+${TAR} -cf ${TAR_CURDIR}/base.tar ${RSYNCROOT}/release/base
+${TAR} -cf ${TAR_CURDIR}/ports.tar --exclude 'PortIndex*' ${RSYNCROOT}/release/ports
+cp -pR ${RSYNCROOT}/release/ports/PortIndex_* ${TAR_CURDIR}
+# XXX needs PRIVKEY to be set above
+#${OPENSSL} dgst -ripemd160 -sign ${PRIVKEY} -out ${TAR_CURDIR}/base.tar.rmd160 ${TAR_CURDIR}/base.tar
+#${OPENSSL} dgst -ripemd160 -sign ${PRIVKEY} -out ${TAR_CURDIR}/ports.tar.rmd160 ${TAR_CURDIR}/ports.tar
+for index in ${TAR_CURDIR}/PortIndex_*/PortIndex; do
+    #${OPENSSL} dgst -ripemd160 -sign ${PRIVKEY} -out ${index}.rmd160 ${index}
+done
+${LN} -sf tarballs_current ${RSYNCROOT}/release/tarballs
+${RM} -rf ${RSYNCROOT}/release/tarballs_old
