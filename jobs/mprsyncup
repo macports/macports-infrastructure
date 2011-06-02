@@ -20,7 +20,7 @@
 #
 # Lastly, it is required of every 3rd party mirrors to keep track of this script
 # and the base/portmgr/rsync.repos file and always maintain local copies in as
-# close sync as possible. 
+# close sync as possible.
 #
 #
 # Created by fkr@opendarwin.org, jberry@macports.org and yeled@macports.org,
@@ -97,7 +97,7 @@ fi
 if [ ! -d ${RSYNCROOT}/release/base ]; then
     ${MKDIR} -p ${RSYNCROOT}/release/base
 fi
-${RSYNC} -aIC --delete ${RBASE}/ ${RSYNCROOT}/release/base 
+${RSYNC} -aIC --delete ${RBASE}/ ${RSYNCROOT}/release/base
 
 # clean up the working copy if it is locked
 if [ -f ${PORTS}/.svn/lock ]; then
@@ -106,7 +106,7 @@ fi
 
 # Update/checkout the ports tree, export it and rsync it to ${RSYNCROOT}/release/ports:
 if [ -d ${PORTS}/.svn ]; then
-    ${SVN} update ${PORTS}  
+    ${SVN} update ${PORTS}
 else
     ${SVN} checkout ${SVNURL}/trunk/dports ${PORTS}
 fi
@@ -115,15 +115,15 @@ fi
 pushd ${PORTS} >> /dev/null
 # build MP trunk in a private location for indexing
 pushd ${ROOT}/${TMPDIR} >> /dev/null
-mkdir -p ${TCLPKG} 
+${MKDIR} -p ${TCLPKG}
 ./configure \
     --prefix=${PREFIX} \
     --with-tclpackage=${TCLPKG} \
     --with-install-user=${MP_USER} \
-    --with-install-group=${MP_GROUP} 
-make clean 
+    --with-install-group=${MP_GROUP}
+make clean
 make
-make install 
+make install
 popd
 
 for PLATFORM in $PLATFORMS; do
@@ -145,4 +145,3 @@ if [ ! -h trunk/dports ]; then
     cd trunk
     ${RM} -rf dports && ${LN} -s ../release/ports dports
 fi
-
