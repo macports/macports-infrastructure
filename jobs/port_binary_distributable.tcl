@@ -6,6 +6,8 @@
 # Check that binaries of a port are distributable by looking at its license
 # and the licenses of its dependencies.
 #
+# Expected format: A {B C} means the license is A plus either B or C.
+#
 # Exit status:
 # 0: distributable
 # 1: non-distributable
@@ -19,9 +21,9 @@ array set portsSeen {}
 set check_deptypes {depends_build depends_lib}
 
 set good_licenses {agpl apache apsl artistic boost bsd cecill cpl curl \
-                   fontconfig freebsd gfdl gpl ibmpl ijg jasper lgpl libpng \
-                   mit mpl openssl php psf qpl public-domain ruby sleepycat \
-                   ssleay x11 zlib zpl}
+                   fontconfig freebsd freetype gfdl gpl ibmpl ijg jasper \
+                   lgpl libpng mit mpl openssl php psf qpl public-domain \
+                   ruby sleepycat ssleay x11 zlib zpl}
 foreach lic $good_licenses {
     set license_good($lic) 1
 }
@@ -107,18 +109,28 @@ proc check_licenses {portName variantInfo verbose} {
     set top_license [lindex $top_info 1]
     set top_license_names {}
     # check that top-level port's license(s) are good
-    foreach full_lic $top_license {
-        # chop off any trailing version number
-        set lic [remove_version [string tolower $full_lic]]
-        # add name to the list for later
-        lappend top_license_names $lic
-        if {![info exists license_good($lic)]} {
+    foreach sublist $top_license {
+        # each element may be a list of alternatives (i.e. only one need apply)
+        set any_good 0
+        set sub_names {}
+        foreach full_lic $sublist {
+            # chop off any trailing version number
+            set lic [remove_version [string tolower $full_lic]]
+            # add name to the list for later
+            lappend sub_names $lic
+            if {[info exists license_good($lic)]} {
+                set any_good 1
+            }
+        }
+        lappend top_license_names $sub_names
+        if {!$any_good} {
             if {$verbose} {
                 puts "'$portName' has license '$lic' which is not known to be distributable"
             }
             return 1
         }
     }
+
     # start with deps of top-level port
     set portList [lindex $top_info 0]
     while {[llength $portList] > 0} {
@@ -133,25 +145,53 @@ proc check_licenses {portName variantInfo verbose} {
         if {!$installs_libs} {
             continue
         }
-        foreach full_lic $aPortLicense {
+        foreach sublist $aPortLicense {
+            set any_good 0
+            set any_compatible 0
             # check that this dependency's license(s) are good
-            set lic [remove_version [string tolower $full_lic]]
-            if {![info exists license_good($lic)]} {
+            foreach full_lic $sublist {
+                set lic [remove_version [string tolower $full_lic]]
+                if {[info exists license_good($lic)]} {
+                    set any_good 1
+                } else {
+                    # no good being compatible with other licenses if it's not distributable itself
+                    continue
+                }
+
+                # ... and that they don't conflict with the top-level port's
+                set any_conflict 0
+                foreach top_sublist [concat $top_license $top_license_names] {
+                    set any_sub_compatible 0
+                    foreach top_lic $top_sublist {
+                        if {![info exists license_conflicts([string tolower $top_lic])]
+                            || ([lsearch -sorted $license_conflicts([string tolower $top_lic]) $lic] == -1
+                            && [lsearch -sorted $license_conflicts([string tolower $top_lic]) [string tolower $full_lic]] == -1)} {
+                            set any_sub_compatible 1
+                            break
+                        }
+                    }
+                    if {!$any_sub_compatible} {
+                        set any_conflict 1
+                        break
+                    }
+                }
+                if {!$any_conflict} {
+                    set any_compatible 1
+                    break
+                }
+            }
+
+            if {!$any_good} {
                 if {$verbose} {
                     puts "dependency '$aPort' has license '$lic' which is not known to be distributable"
                 }
                 return 1
             }
-            # ... and that they don't conflict with the top-level port's
-            foreach top_lic [concat $top_license $top_license_names] {
-                if {[info exists license_conflicts([string tolower $top_lic])]
-                    && ([lsearch -sorted $license_conflicts([string tolower $top_lic]) $lic] != -1
-                    || [lsearch -sorted $license_conflicts([string tolower $top_lic]) [string tolower $full_lic]] != -1)} {
-                    if {$verbose} {
-                        puts "dependency '$aPort' has license '$full_lic' which conflicts with license '$top_lic' from '$portName'"
-                    }
-                    return 1
+            if {!$any_compatible} {
+                if {$verbose} {
+                    puts "dependency '$aPort' has license '$full_lic' which conflicts with license '$top_lic' from '$portName'"
                 }
+                return 1
             }
         }
 
