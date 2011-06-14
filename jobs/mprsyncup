@@ -56,7 +56,7 @@ PORTINDEX=${PREFIX}/bin/portindex
 PATH=${PREFIX}/bin:/bin:/usr/bin:/usr/sbin:/opt/local/bin
 
 # platforms we generate indexes for
-PLATFORMS="8_ppc 8_i386 9_ppc 9_i386 10_i386"
+PLATFORMS="8_powerpc 8_i386 9_powerpc 9_i386 10_i386"
 # copy new index of this platform to old index location for MP v1.8 compatability
 OLD_INDEX_PLATFORM="9_i386"
 
