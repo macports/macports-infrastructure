@@ -160,8 +160,8 @@ TAR_CURDIR=${RSYNCROOT}/release/tarballs_current
 ${MKDIR} -p ${TAR_CURDIR}
 cp -pR ${TAR_CURDIR} ${RSYNCROOT}/release/tarballs_old
 ${LN} -sfh tarballs_old ${RSYNCROOT}/release/tarballs
-${TAR} -cf ${TAR_CURDIR}/base.tar ${RSYNCROOT}/release/base
-${TAR} -cf ${TAR_CURDIR}/ports.tar --exclude 'PortIndex*' ${RSYNCROOT}/release/ports
+${TAR} -C ${RSYNCROOT}/release/ -cf ${TAR_CURDIR}/base.tar base
+${TAR} --exclude 'PortIndex*' -C ${RSYNCROOT}/release/ -cf ${TAR_CURDIR}/ports.tar ports
 cp -pR ${RSYNCROOT}/release/ports/PortIndex_* ${TAR_CURDIR}
 # XXX needs PRIVKEY to be set above
 #${OPENSSL} dgst -ripemd160 -sign ${PRIVKEY} -out ${TAR_CURDIR}/base.tar.rmd160 ${TAR_CURDIR}/base.tar
