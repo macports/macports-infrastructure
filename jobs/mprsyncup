@@ -159,7 +159,7 @@ fi
 TAR_CURDIR=${RSYNCROOT}/release/tarballs_current
 ${MKDIR} -p ${TAR_CURDIR}
 cp -pR ${TAR_CURDIR} ${RSYNCROOT}/release/tarballs_old
-${LN} -sf tarballs_old ${RSYNCROOT}/release/tarballs
+${LN} -sfh tarballs_old ${RSYNCROOT}/release/tarballs
 ${TAR} -cf ${TAR_CURDIR}/base.tar ${RSYNCROOT}/release/base
 ${TAR} -cf ${TAR_CURDIR}/ports.tar --exclude 'PortIndex*' ${RSYNCROOT}/release/ports
 cp -pR ${RSYNCROOT}/release/ports/PortIndex_* ${TAR_CURDIR}
@@ -169,5 +169,5 @@ cp -pR ${RSYNCROOT}/release/ports/PortIndex_* ${TAR_CURDIR}
 for index in ${TAR_CURDIR}/PortIndex_*/PortIndex; do
     #${OPENSSL} dgst -ripemd160 -sign ${PRIVKEY} -out ${index}.rmd160 ${index}
 done
-${LN} -sf tarballs_current ${RSYNCROOT}/release/tarballs
+${LN} -sfh tarballs_current ${RSYNCROOT}/release/tarballs
 ${RM} -rf ${RSYNCROOT}/release/tarballs_old
