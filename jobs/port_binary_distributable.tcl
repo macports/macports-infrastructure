@@ -36,8 +36,13 @@ array set license_conflicts \
     cecill {agpl apache apsl cpl ibmpl mpl openssl php qpl ssleay zpl-1} \
     freetype {gpl-2} \
     gpl {agpl apache apsl cpl ibmpl mpl openssl php qpl ssleay zpl-1} \
-    gpl-2 {freetype} \
+    gpl-1 {gpl-3 gpl-3+ lgpl-3 lgpl-3+}
+    gpl-2 {freetype gpl-3 gpl-3+ lgpl-3 lgpl-3+} \
+    gpl-3 {gpl-1 gpl-2} \
+    gpl-3+ {gpl-1 gpl-2} \
     ibmpl {cecill gpl} \
+    lgpl-3 {gpl-1 gpl-2} \
+    lgpl-3+ {gpl-1 gpl-2} \
     mpl {cecill gpl} \
     openssl {cecill gpl} \
     php {cecill gpl} \
