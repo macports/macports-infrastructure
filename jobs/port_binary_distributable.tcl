@@ -20,33 +20,33 @@ array set portsSeen {}
 
 set check_deptypes {depends_build depends_lib}
 
-set good_licenses {agpl apache apsl artistic boost bsd cecill cpl curl \
-                   fontconfig freebsd freetype gfdl gpl ibmpl ijg jasper \
-                   lgpl libpng mit mpl openssl php psf qpl public-domain \
+set good_licenses {agpl apache apsl artistic boost bsd cecill cpl curl
+                   fontconfig freebsd freetype gfdl gpl ibmpl ijg jasper
+                   lgpl libpng mit mpl openssl php psf qpl public-domain
                    ruby sleepycat ssleay x11 zlib zpl}
 foreach lic $good_licenses {
     set license_good($lic) 1
 }
 # keep these values sorted
 array set license_conflicts \
-    {agpl {cecill gpl} \
-    apache {cecill gpl} \
-    apsl {cecill gpl} \
-    cpl {cecill gpl} \
-    cecill {agpl apache apsl cpl ibmpl mpl openssl php qpl ssleay zpl-1} \
-    freetype {gpl-2} \
-    gpl {agpl apache apsl cpl ibmpl mpl openssl php qpl ssleay zpl-1} \
+    {agpl {cecill gpl}
+    apache {cecill gpl}
+    apsl {cecill gpl}
+    cpl {cecill gpl}
+    cecill {agpl apache apsl cpl ibmpl mpl openssl php qpl ssleay zpl-1}
+    freetype {gpl-2}
+    gpl {agpl apache apsl cpl ibmpl mpl openssl php qpl ssleay zpl-1}
     gpl-1 {gpl-3 gpl-3+ lgpl-3 lgpl-3+}
-    gpl-2 {freetype gpl-3 gpl-3+ lgpl-3 lgpl-3+} \
-    gpl-3 {gpl-1 gpl-2} \
-    gpl-3+ {gpl-1 gpl-2} \
-    ibmpl {cecill gpl} \
-    lgpl-3 {gpl-1 gpl-2} \
-    lgpl-3+ {gpl-1 gpl-2} \
-    mpl {cecill gpl} \
-    openssl {cecill gpl} \
-    php {cecill gpl} \
-    qpl {cecill gpl} \
+    gpl-2 {freetype gpl-3 gpl-3+ lgpl-3 lgpl-3+}
+    gpl-3 {gpl-1 gpl-2}
+    gpl-3+ {gpl-1 gpl-2}
+    ibmpl {cecill gpl}
+    lgpl-3 {gpl-1 gpl-2}
+    lgpl-3+ {gpl-1 gpl-2}
+    mpl {cecill gpl}
+    openssl {cecill gpl}
+    php {cecill gpl}
+    qpl {cecill gpl}
     ssleay {cecill gpl}
     zpl-1 {cecill gpl}}
 
