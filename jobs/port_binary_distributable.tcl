@@ -26,7 +26,7 @@ set check_deptypes {depends_build depends_lib}
 # distributing binaries.
 # 'Restrictive' means a non-free license that does not allow distributing
 # binaries, and is thus not in the list.
-set good_licenses {agpl apache apsl artistic boost bsd cecill cpl curl
+set good_licenses {agpl apache apsl artistic autoconf boost bsd cecill cpl curl
                    fontconfig freebsd freetype gfdl gpl ibmpl ijg jasper
                    lgpl libpng mit mpl openssl php psf qpl public-domain
                    restrictive/distributable ruby sleepycat ssleay x11 zlib
