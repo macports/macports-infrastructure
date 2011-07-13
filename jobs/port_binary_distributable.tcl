@@ -29,8 +29,8 @@ set check_deptypes {depends_build depends_lib}
 set good_licenses {agpl apache apsl artistic autoconf boost bsd cecill cpl curl
                    fontconfig freebsd freetype gfdl gpl ibmpl ijg jasper
                    lgpl libpng mit mpl openssl php psf qpl public-domain
-                   restrictive/distributable ruby sleepycat ssleay x11 zlib
-                   zpl}
+                   restrictive/distributable ruby sleepycat ssleay tcl/tk x11
+                   zlib zpl}
 foreach lic $good_licenses {
     set license_good($lic) 1
 }
