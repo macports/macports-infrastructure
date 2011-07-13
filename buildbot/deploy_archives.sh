@@ -20,20 +20,21 @@ if [[ -z "$PRIVKEY" ]]; then
     PRIVKEY=""
 fi
 
-
-for archive in ${ULPATH}/*/*; do
-    portname=$(basename $(dirname $archive))
-    aname=$(basename $archive)
-    echo deploying archive: $aname
-    if [[ -n "$PRIVKEY" ]]; then
-        openssl dgst -ripemd160 -sign "${PRIVKEY}" -out ${ULPATH}/${portname}/${aname}.rmd160 ${archive}
+if ls ${ULPATH}/*/* > /dev/null 2>&1 ; then
+    for archive in ${ULPATH}/*/*; do
+        portname=$(basename $(dirname $archive))
+        aname=$(basename $archive)
+        echo deploying archive: $aname
+        if [[ -n "$PRIVKEY" ]]; then
+            openssl dgst -ripemd160 -sign "${PRIVKEY}" -out ${ULPATH}/${portname}/${aname}.rmd160 ${archive}
+        fi
+    done
+    
+    if [[ -n "$DLHOST" ]]; then
+        rsync -av --ignore-existing ${ULPATH}/ ${DLHOST}:${DLPATH}
+    else
+        rsync -av --ignore-existing ${ULPATH}/ ${DLPATH}
     fi
-done
-
-if [[ -n "$DLHOST" ]]; then
-    rsync -av --ignore-existing ${ULPATH}/ ${DLHOST}:${DLPATH}
-else
-    rsync -av --ignore-existing ${ULPATH}/ ${DLPATH}
 fi
 
 # clean up after ourselves
