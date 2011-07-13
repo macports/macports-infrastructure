@@ -1,13 +1,5 @@
 #!/bin/sh
 
-if [[ -z "$PORTLISTFILE" ]]; then
-    PORTLISTFILE=portlist
-fi
-
-if [[ -z "$PREFIX" ]]; then
-    PREFIX="/opt/local"
-fi
-
 # download server hostname
 if [[ -z "$DLHOST" ]]; then
     DLHOST=""
