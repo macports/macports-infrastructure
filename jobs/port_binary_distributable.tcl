@@ -26,23 +26,31 @@ set check_deptypes {depends_build depends_lib}
 # distributing binaries.
 # 'Restrictive' means a non-free license that does not allow distributing
 # binaries, and is thus not in the list.
-set good_licenses {agpl apache apsl artistic autoconf boost bsd cecill cpl
-                   curl fontconfig freebsd freetype gfdl gpl ibmpl ijg jasper
-                   lgpl libpng libtool mit mpl openssl php psf qpl
-                   public-domain restrictive/distributable ruby sleepycat
+# 'Permissive' is a catchall for other licenses that allow
+# modification and distribution of source and binaries.
+# 'Copyleft' means a license that requires source code to be made available,
+# and derivative works to be licensed the same as the original.
+# 'GPLConflict' should be added if the license conflicts with the GPL (and its
+# variants like CeCILL and the AGPL) and is not in the list of licenses known
+# to do so below.
+# 'Noncommercial' means a license that prohibits commercial use.
+set good_licenses {agpl apache apsl artistic autoconf boost bsd cecill copyleft cpl
+                   curl fontconfig freebsd freetype gfdl gpl gplconflict ibmpl ijg
+                   jasper lgpl libpng libtool mit mpl noncommercial openssl permissive
+                   php psf qpl public-domain restrictive/distributable ruby sleepycat
                    ssleay tcl/tk x11 zlib zpl}
 foreach lic $good_licenses {
     set license_good($lic) 1
 }
 # keep these values sorted
 array set license_conflicts \
-    {agpl {cecill gpl-2 gpl-1 restrictive/distributable}
+    {agpl {cecill gpl-1 gpl-2 gplconflict noncommercial restrictive/distributable}
     apache {cecill gpl}
     apsl {cecill gpl}
     cpl {cecill gpl}
-    cecill {agpl apache apsl cpl ibmpl mpl openssl php qpl restrictive/distributable ssleay zpl-1}
+    cecill {agpl apache apsl cpl gplconflict ibmpl mpl noncommercial openssl php qpl restrictive/distributable ssleay zpl-1}
     freetype {gpl-2}
-    gpl {agpl apache apsl cpl ibmpl mpl openssl php qpl restrictive/distributable ssleay zpl-1}
+    gpl {agpl apache apsl cpl gplconflict ibmpl mpl noncommercial openssl php qpl restrictive/distributable ssleay zpl-1}
     gpl-1 {gpl-3 gpl-3+ lgpl-3 lgpl-3+}
     gpl-2 {freetype gpl-3 gpl-3+ lgpl-3 lgpl-3+}
     gpl-3 {gpl-1 gpl-2}
