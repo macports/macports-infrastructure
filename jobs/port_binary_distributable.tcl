@@ -45,14 +45,14 @@ foreach lic $good_licenses {
 # keep these values sorted
 array set license_conflicts \
     {agpl {cecill gpl-1 gpl-2 gplconflict noncommercial restrictive/distributable}
-    apache {cecill gpl}
+    apache {cecill gpl-1 gpl-2}
     apsl {cecill gpl}
     cpl {cecill gpl}
     cecill {agpl apache apsl cpl gplconflict ibmpl mpl noncommercial openssl php qpl restrictive/distributable ssleay zpl-1}
     freetype {gpl-2}
-    gpl {agpl apache apsl cpl gplconflict ibmpl mpl noncommercial openssl php qpl restrictive/distributable ssleay zpl-1}
-    gpl-1 {gpl-3 gpl-3+ lgpl-3 lgpl-3+}
-    gpl-2 {freetype gpl-3 gpl-3+ lgpl-3 lgpl-3+}
+    gpl {agpl apsl cpl gplconflict ibmpl mpl noncommercial openssl php qpl restrictive/distributable ssleay zpl-1}
+    gpl-1 {apache gpl-3 gpl-3+ lgpl-3 lgpl-3+}
+    gpl-2 {apache freetype gpl-3 gpl-3+ lgpl-3 lgpl-3+}
     gpl-3 {gpl-1 gpl-2}
     gpl-3+ {gpl-1 gpl-2}
     ibmpl {cecill gpl}
