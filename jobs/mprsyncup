@@ -43,7 +43,6 @@ OPENSSL="/usr/bin/openssl"
 
 # Paths we'll work on:
 ROOT=/var/tmp/macports
-TMPDIR=mp_trunk/base
 PREFIX=${ROOT}/opt/local
 TCLPKG=${PREFIX}/lib/tcl
 SVNROOT=/var/tmp/macports
@@ -59,9 +58,6 @@ PATH=${PREFIX}/bin:/bin:/usr/bin:/usr/sbin:/opt/local/bin
 PLATFORMS="8_powerpc 8_i386 9_powerpc 9_i386 10_i386 11_i386"
 # copy new index of this platform to old index location for MP v1.8 compatability
 OLD_INDEX_PLATFORM="9_i386"
-
-MP_USER=nobody
-MP_GROUP=nobody
 
 # Sources information:
 SVNURL=https://svn.macports.org/repository/macports
@@ -120,13 +116,11 @@ fi
 # generate platform-specific indexes
 pushd ${PORTS} >> /dev/null
 # build MP trunk in a private location for indexing
-pushd ${ROOT}/${TMPDIR} >> /dev/null
+pushd ${TBASE} >> /dev/null
 ${MKDIR} -p ${TCLPKG}
 ./configure \
     --prefix=${PREFIX} \
-    --with-tclpackage=${TCLPKG} \
-    --with-install-user=${MP_USER} \
-    --with-install-group=${MP_GROUP}
+    --with-tclpackage=${TCLPKG}
 make clean
 make
 make install
