@@ -20,7 +20,7 @@ my $MKDIR = "/bin/mkdir -p";
 my $rev = $ARGV[0] or usage();
 my $TMPROOT = "/tmp/mp_mirror/$rev";
 
-my @changes = `$SVNLOOK changed $REPOPATH -r $rev`;
+my @changes = `$SVNLOOK changed $REPOPATH -r $rev | grep '/Portfile' | grep -vE '^[ ]+D'`;
 
 foreach my $change (@changes) {
     if ($change =~ /Portfile/) { 
