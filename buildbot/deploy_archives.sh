@@ -26,7 +26,8 @@ if ls ${ULPATH}/*/* > /dev/null 2>&1 ; then
         aname=$(basename $archive)
         echo deploying archive: $aname
         if [[ -n "$PRIVKEY" ]]; then
-            openssl dgst -ripemd160 -sign "${PRIVKEY}" -out ${ULPATH}/${portname}/${aname}.rmd160 ${archive}
+            openssl dgst -ripemd160 -sign "${PRIVKEY}" -out ${ULPATH}/${portname}/${aname}.rmd160 ${archive} ;
+            chmod a+r ${ULPATH}/${portname}/${aname}.rmd160 ;
         fi
     done
     
