@@ -35,7 +35,7 @@ set check_deptypes {depends_build depends_lib}
 # to do so below.
 # 'Noncommercial' means a license that prohibits commercial use.
 set good_licenses {agpl apache apsl artistic autoconf boost bsd cecill copyleft cpl
-                   curl fontconfig freebsd freetype gfdl gpl gplconflict ibmpl ijg
+                   curl fontconfig freebsd freetype gfdl gd gpl gplconflict ibmpl ijg
                    jasper lgpl libpng libtool mit mpl noncommercial openssl permissive
                    php psf qpl public-domain restrictive/distributable ruby sleepycat
                    ssleay tcl/tk x11 zlib zpl}
@@ -50,9 +50,10 @@ array set license_conflicts \
     apache-1.1 {agpl gpl}
     apsl {cecill gpl}
     cpl {cecill gpl}
-    cecill {agpl apache apsl cpl gplconflict ibmpl mpl noncommercial openssl php qpl restrictive/distributable ssleay zpl-1}
+    cecill {agpl apache apsl cpl gd gplconflict ibmpl mpl noncommercial openssl php qpl restrictive/distributable ssleay zpl-1}
     freetype {gpl-2}
-    gpl {agpl apache-1 apache-1.1 apsl cpl gplconflict ibmpl mpl noncommercial openssl php qpl restrictive/distributable ssleay zpl-1}
+    gd {cecill gpl}    
+    gpl {agpl apache-1 apache-1.1 apsl cpl gd gplconflict ibmpl mpl noncommercial openssl php qpl restrictive/distributable ssleay zpl-1}
     gpl-1 {apache gpl-3 gpl-3+ lgpl-3 lgpl-3+}
     gpl-2 {apache freetype gpl-3 gpl-3+ lgpl-3 lgpl-3+}
     gpl-3 {gpl-1 gpl-2}
