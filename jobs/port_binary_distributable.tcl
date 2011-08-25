@@ -34,7 +34,7 @@ set check_deptypes {depends_build depends_lib}
 # variants like CeCILL and the AGPL) and is not in the list of licenses known
 # to do so below.
 # 'Noncommercial' means a license that prohibits commercial use.
-set good_licenses {agpl apache apsl artistic autoconf boost bsd cecill copyleft cpl
+set good_licenses {afl agpl apache apsl artistic autoconf boost bsd cecill copyleft cpl
                    curl fontconfig freebsd freetype gfdl gd gpl gplconflict ibmpl ijg
                    jasper lgpl libpng libtool mit mpl noncommercial openssl permissive
                    php psf qpl public-domain restrictive/distributable ruby sleepycat
@@ -44,16 +44,17 @@ foreach lic $good_licenses {
 }
 # keep these values sorted
 array set license_conflicts \
-    {agpl {apache-1 apache-1.1 cecill gpl-1 gpl-2 gplconflict noncommercial restrictive/distributable}
+    {afl {cecill gpl}
+    agpl {apache-1 apache-1.1 cecill gpl-1 gpl-2 gplconflict noncommercial restrictive/distributable}
     apache {cecill gpl-1 gpl-2}
     apache-1 {agpl gpl}
     apache-1.1 {agpl gpl}
     apsl {cecill gpl}
     cpl {cecill gpl}
-    cecill {agpl apache apsl cpl gd gplconflict ibmpl mpl noncommercial openssl php qpl restrictive/distributable ssleay zpl-1}
+    cecill {afl agpl apache apsl cpl gd gplconflict ibmpl mpl noncommercial openssl php qpl restrictive/distributable ssleay zpl-1}
     freetype {gpl-2}
-    gd {cecill gpl}    
-    gpl {agpl apache-1 apache-1.1 apsl cpl gd gplconflict ibmpl mpl noncommercial openssl php qpl restrictive/distributable ssleay zpl-1}
+    gd {cecill gpl}
+    gpl {afl agpl apache-1 apache-1.1 apsl cpl gd gplconflict ibmpl mpl noncommercial openssl php qpl restrictive/distributable ssleay zpl-1}
     gpl-1 {apache gpl-3 gpl-3+ lgpl-3 lgpl-3+}
     gpl-2 {apache freetype gpl-3 gpl-3+ lgpl-3 lgpl-3+}
     gpl-3 {gpl-1 gpl-2}
