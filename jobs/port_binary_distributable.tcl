@@ -42,9 +42,19 @@ set good_licenses {afl agpl apache apsl artistic autoconf boost bsd cecill copyl
 foreach lic $good_licenses {
     set license_good($lic) 1
 }
+
+proc all_licenses_except { args } {
+    global good_licenses
+    set remaining $good_licenses
+    foreach arg $args {
+        set remaining [lsearch -inline -all -not -exact $remaining $arg]
+    }
+    return [list $remaining]
+}
+
 # keep these values sorted
 array set license_conflicts \
-    {afl {cecill gpl}
+    "afl {cecill gpl}
     agpl {apache-1 apache-1.1 cecill gpl-1 gpl-2 gplconflict noncommercial restrictive/distributable}
     apache {cecill gpl-1 gpl-2}
     apache-1 {agpl gpl}
@@ -64,11 +74,12 @@ array set license_conflicts \
     lgpl-3+ {gpl-1 gpl-2}
     mpl {cecill gpl}
     openssl {cecill gpl}
+    opensslexception [all_licenses_except openssl ssleay]
     php {cecill gpl}
     qpl {cecill gpl}
     restrictive/distributable {agpl cecill gpl}
     ssleay {cecill gpl}
-    zpl-1 {cecill gpl}}
+    zpl-1 {cecill gpl}"
 
 proc printUsage {} {
     puts "Usage: $::argv0 \[-hvV\] \[-t macports-tcl-path\] port-name \[variants...\]"
