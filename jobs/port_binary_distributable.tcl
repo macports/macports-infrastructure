@@ -35,10 +35,10 @@ set check_deptypes {depends_build depends_lib}
 # to do so below.
 # 'Noncommercial' means a license that prohibits commercial use.
 set good_licenses {afl agpl apache apsl artistic autoconf boost bsd cecill copyleft cpl
-                   curl fontconfig freebsd freetype gfdl gd gpl gplconflict ibmpl ijg isc
-                   jasper lgpl lppl libpng libtool mit mpl ncsa noncommercial openssl permissive
-                   php psf qpl public-domain restrictive/distributable ruby sleepycat
-                   ssleay tcl/tk x11 wtfpl zlib zpl}
+                   curl fontconfig freebsd freetype gd gfdl gpl gplconflict ibmpl ijg isc
+                   jasper lgpl libpng libtool lppl mit mpl ncsa noncommercial openssl permissive
+                   php psf public-domain qpl restrictive/distributable ruby sleepycat
+                   ssleay tcl/tk w3c wtfpl x11 zlib zpl}
 foreach lic $good_licenses {
     set license_good($lic) 1
 }
