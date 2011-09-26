@@ -34,11 +34,12 @@ set check_deptypes {depends_build depends_lib}
 # variants like CeCILL and the AGPL) and is not in the list of licenses known
 # to do so below.
 # 'Noncommercial' means a license that prohibits commercial use.
-set good_licenses {afl agpl apache apsl artistic autoconf boost bsd cecill copyleft cpl
-                   curl fontconfig freebsd freetype gd gfdl gpl gplconflict ibmpl ijg isc
-                   jasper lgpl libpng libtool lppl mit mpl ncsa noncommercial openssl permissive
-                   php psf public-domain qpl restrictive/distributable ruby sleepycat
-                   ssleay tcl/tk w3c wtfpl x11 zlib zpl}
+set good_licenses {afl agpl apache apsl artistic autoconf boost bsd cecill \
+                   copyleft cpl curl epl fontconfig freebsd freetype gd gfdl \
+                   gpl gplconflict ibmpl ijg isc jasper lgpl libpng libtool \
+                   lppl mit mpl ncsa noncommercial openssl permissive php \
+                   psf public-domain qpl restrictive/distributable ruby \
+                   sleepycat ssleay tcl/tk w3c wtfpl x11 zlib zpl}
 foreach lic $good_licenses {
     set license_good($lic) 1
 }
@@ -61,10 +62,11 @@ array set license_conflicts \
     apache-1.1 {agpl gpl}
     apsl {cecill gpl}
     cpl {cecill gpl}
-    cecill {afl agpl apache apsl cpl gd gplconflict ibmpl lppl mpl noncommercial openssl php qpl restrictive/distributable ruby ssleay zpl-1}
+    cecill {afl agpl apache apsl cpl epl gd gplconflict ibmpl lppl mpl noncommercial openssl php qpl restrictive/distributable ruby ssleay zpl-1}
+    epl {cecill gpl}
     freetype {gpl-2}
     gd {cecill gpl}
-    gpl {afl agpl apache-1 apache-1.1 apsl cpl gd gplconflict ibmpl lppl mpl noncommercial openssl php qpl restrictive/distributable ruby ssleay zpl-1}
+    gpl {afl agpl apache-1 apache-1.1 apsl cpl epl gd gplconflict ibmpl lppl mpl noncommercial openssl php qpl restrictive/distributable ruby ssleay zpl-1}
     gpl-1 {apache gpl-3 gpl-3+ lgpl-3 lgpl-3+}
     gpl-2 {apache freetype gpl-3 gpl-3+ lgpl-3 lgpl-3+}
     gpl-3 {gpl-1 gpl-2}
