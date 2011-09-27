@@ -7,7 +7,7 @@
 ####
 
 # regexp of ports that we do not mirror
-EXCLUSIONS='^(molden)$'
+EXCLUSIONS='^(molden|metis)$'
 
 # macports really wants this, so lets appease it
 export COLUMNS=80
