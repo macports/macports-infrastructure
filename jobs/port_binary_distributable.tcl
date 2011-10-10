@@ -83,7 +83,6 @@ array set license_conflicts \
     restrictive/distributable {agpl cecill gpl}
     ruby {cecill gpl}
     ssleay {cecill gpl}
-    wxwidgets {gpl-1 gpl-2}
     zpl-1 {cecill gpl}"
 
 proc printUsage {} {
