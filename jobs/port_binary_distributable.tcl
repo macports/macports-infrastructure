@@ -35,7 +35,7 @@ set check_deptypes {depends_build depends_lib}
 # to do so below.
 # 'Noncommercial' means a license that prohibits commercial use.
 set good_licenses {afl agpl apache apsl artistic autoconf bitstreamvera \
-                   boost bsd cecill copyleft cpl curl epl fpll \
+                   boost bsd bsd-old cecill copyleft cpl curl epl fpll \
                    fontconfig freebsd freetype gd gfdl gpl gplconflict \
                    ibmpl ijg isc  jasper lgpl libtool lppl mit mpl ncsa \
                    noncommercial openldap openssl permissive php psf \
@@ -62,12 +62,13 @@ array set license_conflicts \
     apache-1 {agpl gpl}
     apache-1.1 {agpl gpl}
     apsl {cecill gpl}
+    bsd-old {cecill gpl}
     cpl {cecill gpl}
-    cecill {afl agpl apache apsl cpl epl gd gplconflict ibmpl lppl mpl noncommercial openssl php qpl restrictive/distributable ruby ssleay zpl-1}
+    cecill {afl agpl apache apsl bsd-old cpl epl gd gplconflict ibmpl lppl mpl noncommercial openssl php qpl restrictive/distributable ruby ssleay zpl-1}
     epl {cecill gpl}
     freetype {gpl-2}
     gd {cecill gpl}
-    gpl {afl agpl apache-1 apache-1.1 apsl cpl epl gd gplconflict ibmpl lppl mpl noncommercial openssl php qpl restrictive/distributable ruby ssleay zpl-1}
+    gpl {afl agpl apache-1 apache-1.1 apsl bsd-old cpl epl gd gplconflict ibmpl lppl mpl noncommercial openssl php qpl restrictive/distributable ruby ssleay zpl-1}
     gpl-1 {apache gpl-3 gpl-3+ lgpl-3 lgpl-3+}
     gpl-2 {apache freetype gpl-3 gpl-3+ lgpl-3 lgpl-3+}
     gpl-3 {gpl-1 gpl-2}
