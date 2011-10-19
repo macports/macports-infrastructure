@@ -36,7 +36,7 @@ set check_deptypes {depends_build depends_lib}
 # 'Noncommercial' means a license that prohibits commercial use.
 set good_licenses {afl agpl apache apsl artistic autoconf bitstreamvera \
                    boost bsd bsd-old cecill cecill-b cecill-c copyleft cpl \
-                   curl epl fpll fontconfig freebsd freetype gd gfdl gpl \
+                   curl epl fpll fontconfig freetype gd gfdl gpl \
                    gplconflict ibmpl ijg isc  jasper lgpl libtool lppl mit \
                    mpl ncsa noncommercial openldap openssl permissive php \
                    psf public-domain qpl restrictive/distributable ruby \
