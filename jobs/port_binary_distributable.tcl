@@ -225,7 +225,7 @@ proc check_licenses {portName variantInfo verbose} {
 
             if {!$any_good} {
                 if {$verbose} {
-                    puts "dependency '$aPort' has license '$lic' which is not known to be distributable"
+                    puts "${portName}'s dependency '$aPort' has license '$lic' which is not known to be distributable"
                 }
                 return 1
             }
