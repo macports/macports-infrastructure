@@ -133,6 +133,9 @@ proc infoForPort {portName variantInfo} {
         # when in doubt, assume code from the dep is incorporated
         lappend ret yes
     }
+    if {[info exists portInfo(license_noconflict)]} {
+        lappend ret $portInfo(license_noconflict)
+    }
     return $ret
 }
 
@@ -151,6 +154,9 @@ proc check_licenses {portName variantInfo verbose} {
     array set portSeen {}
     set top_info [infoForPort $portName $variantInfo]
     set top_license [lindex $top_info 1]
+    foreach noconflict_port [lindex $top_info 3] {
+        set noconflict_ports($noconflict_port) 1
+    }
     set top_license_names {}
     # check that top-level port's license(s) are good
     foreach sublist $top_license {
@@ -182,6 +188,9 @@ proc check_licenses {portName variantInfo verbose} {
         # mark as seen and remove from the list
         set portSeen($aPort) 1
         set portList [lreplace $portList 0 0]
+        if {[info exists noconflict_ports($aPort)]} {
+            continue
+        }
 
         set aPortInfo [infoForPort $aPort $variantInfo]
         set aPortLicense [lindex $aPortInfo 1]
