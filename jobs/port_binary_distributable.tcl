@@ -37,7 +37,7 @@ set check_deptypes {depends_build depends_lib}
 set good_licenses {afl agpl apache apsl artistic autoconf beopen bitstreamvera \
                    boost bsd bsd-old cecill cecill-b cecill-c cnri copyleft \
                    cpl curl epl fpll fontconfig freetype gd gfdl gpl \
-                   gplconflict ibmpl ijg isc  jasper lgpl libtool lppl mit \
+                   gplconflict ibmpl ijg isc jasper lgpl libtool lppl mit \
                    mpl ncsa noncommercial openldap openssl permissive php \
                    psf public-domain qpl restrictive/distributable ruby \
                    sleepycat ssleay tcl/tk vim w3c wtfpl x11 zlib wxwidgets zpl}
