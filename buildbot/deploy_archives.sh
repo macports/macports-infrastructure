@@ -20,6 +20,11 @@ if [[ -z "$PRIVKEY" ]]; then
     PRIVKEY=""
 fi
 
+if [[ ! -d $ULPATH ]]; then
+    echo $ULPATH does not exist!
+    exit 1
+fi
+
 if ls ${ULPATH}/*/* > /dev/null 2>&1 ; then
     for archive in ${ULPATH}/*/*; do
         portname=$(basename $(dirname $archive))
@@ -36,6 +41,9 @@ if ls ${ULPATH}/*/* > /dev/null 2>&1 ; then
     else
         rsync -av --ignore-existing ${ULPATH}/ ${DLPATH}
     fi
+else
+    echo $ULPATH appears to contain no archives
+    ls -R $ULPATH
 fi
 
 # clean up after ourselves
