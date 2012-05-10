@@ -25,7 +25,7 @@ if [[ ! -d $ULPATH ]]; then
     exit 1
 fi
 
-if ls ${ULPATH}/*/* > /dev/null 2>&1 ; then
+if [[ -n "`ls ${ULPATH}`" ]]; then
     for archive in ${ULPATH}/*/*; do
         portname=$(basename $(dirname $archive))
         aname=$(basename $archive)
