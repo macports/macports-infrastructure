@@ -153,6 +153,9 @@ proc check_licenses {portName variantInfo verbose} {
     global license_good license_conflicts
     array set portSeen {}
     set top_info [infoForPort $portName $variantInfo]
+    if {$top_info == {}} {
+        return 1
+    }
     set top_license [lindex $top_info 1]
     foreach noconflict_port [lindex $top_info 3] {
         set noconflict_ports($noconflict_port) 1
