@@ -31,8 +31,12 @@ if [[ -n "`ls ${ULPATH}`" ]]; then
         aname=$(basename $archive)
         echo deploying archive: $aname
         if [[ -n "$PRIVKEY" ]]; then
-            openssl dgst -ripemd160 -sign "${PRIVKEY}" -out ${ULPATH}/${portname}/${aname}.rmd160 ${archive} ;
-            chmod a+r ${ULPATH}/${portname}/${aname}.rmd160 ;
+            openssl dgst -ripemd160 -sign "${PRIVKEY}" -out ${ULPATH}/${portname}/${aname}.rmd160 ${archive} || exit 1
+            if [[ -f ${ULPATH}/${portname}/${aname}.rmd160 ]]; then
+                chmod a+r ${ULPATH}/${portname}/${aname}.rmd160
+            else
+                exit 1
+            fi
         fi
     done
     
