@@ -20,8 +20,19 @@ if [[ -z "$PRIVKEY" ]]; then
     PRIVKEY=""
 fi
 
+# buildbot apparently doesn't run jobs on the master in different dirs or
+# prevent them from running simultaneously
+if [[ -z "$LOCKFILE" ]]; then
+    LOCKFILE="./deploy.lock"
+fi
+
+while ! shlock -f $LOCKFILE -p $$; do
+    sleep 1
+done
+
 if [[ ! -d $ULPATH ]]; then
     echo $ULPATH does not exist!
+    rm $LOCKFILE
     exit 1
 fi
 
@@ -36,6 +47,7 @@ if [[ -n "`ls ${ULPATH}`" ]]; then
                 chmod a+r ${ULPATH}/${portname}/${aname}.rmd160
             else
                 rm -rf $ULPATH
+                rm $LOCKFILE
                 exit 1
             fi
         fi
@@ -52,4 +64,5 @@ else
 fi
 
 # clean up after ourselves
+rm $LOCKFILE
 rm -rf $ULPATH
