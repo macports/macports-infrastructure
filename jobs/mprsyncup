@@ -87,7 +87,7 @@ ${RSYNC} -aIC --delete ${TBASE}/ ${RSYNCROOT}/trunk/base
 # Read what tag we're releasing from, switch to/checkout a copy, export and rsync it to ${RSYNCROOT}/release/base:
 read RELEASE_URL < ${TBASE}/${RELEASE_URL_FILE}
 if [ ! -n ${RELEASE_URL} ]; then
-    echo "no RELEASE_URL specified in svn trunk, baling out!"
+    echo "no RELEASE_URL specified in svn trunk, bailing out!"
     exit 1
 fi
 if [ -d ${RBASE}/.svn ]; then
