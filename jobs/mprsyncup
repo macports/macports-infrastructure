@@ -56,8 +56,6 @@ PATH=${PREFIX}/bin:/bin:/usr/bin:/usr/sbin:/opt/local/bin
 
 # platforms we generate indexes for
 PLATFORMS="8_powerpc 8_i386 9_powerpc 9_i386 10_i386 11_i386 12_i386"
-# copy new index of this platform to old index location for MP v1.8 compatability
-OLD_INDEX_PLATFORM="9_i386"
 
 # Sources information:
 SVNURL=https://svn.macports.org/repository/macports
@@ -130,8 +128,6 @@ for PLATFORM in $PLATFORMS; do
 	$PORTINDEX -p darwin_${PLATFORM} -o PortIndex_darwin_${PLATFORM};
 done
 
-# support MP 1.8
-cp PortIndex_darwin_${OLD_INDEX_PLATFORM}/* ./
 popd
 
 if [ ! -d ${RSYNCROOT}/release/ports ]; then
