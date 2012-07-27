@@ -54,9 +54,9 @@ if [[ -n "`ls ${ULPATH}`" ]]; then
     done
     
     if [[ -n "$DLHOST" ]]; then
-        rsync -av --ignore-existing ${ULPATH}/ ${DLHOST}:${DLPATH}
+        rsync -rlDzv --ignore-existing ${ULPATH}/ ${DLHOST}:${DLPATH}
     else
-        rsync -av --ignore-existing ${ULPATH}/ ${DLPATH}
+        rsync -rlDzv --ignore-existing ${ULPATH}/ ${DLPATH}
     fi
 else
     echo $ULPATH appears to contain no archives
