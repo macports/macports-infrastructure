@@ -12,7 +12,12 @@ fi
 
 # path where archives get uploaded to buildmaster
 if [[ -z "$ULPATH" ]]; then
-    ULPATH="./archive_staging"
+    # workaround for buildbot not accepting WithProperties in env
+    if [[ -n "$1" ]]; then
+        ULPATH="$1"
+    else
+        ULPATH="./archive_staging"
+    fi
 fi
 
 # private key to use for signing
