@@ -125,7 +125,7 @@ make install
 popd
 
 for PLATFORM in $PLATFORMS; do
-	$PORTINDEX -p darwin_${PLATFORM} -o PortIndex_darwin_${PLATFORM};
+	$PORTINDEX -p macosx_${PLATFORM} -o PortIndex_darwin_${PLATFORM};
 done
 
 popd
