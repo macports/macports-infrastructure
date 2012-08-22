@@ -56,39 +56,42 @@ proc all_licenses_except { args } {
 
 # keep these values sorted
 array set license_conflicts \
-    "afl {cecill gpl}
-    agpl {apache-1 apache-1.1 cddl cecill gpl-1 gpl-2 gplconflict noncommercial restrictive/distributable}
-    apache {cecill gpl-1 gpl-2}
+    "afl {agpl cecill gpl}
+    agpl {afl apache-1 apache-1.1 apsl beopen bsd-old cddl cecill cnri cpl epl gd gpl-1 gpl-2 gplconflict ibmpl lppl mpl noncommercial openssl php qpl restrictive/distributable ruby ssleay zpl-1}
+    agpl-1 {apache freetype gpl-3 gpl-3+ lgpl-3 lgpl-3+}
+    apache {agpl-1 cecill gpl-1 gpl-2}
     apache-1 {agpl gpl}
     apache-1.1 {agpl gpl}
-    apsl {cecill gpl}
-    beopen {cecill gpl}
-    bsd-old {cecill gpl}
+    apsl {agpl cecill gpl}
+    beopen {agpl cecill gpl}
+    bsd-old {agpl cecill gpl}
     cddl {agpl cecill gpl}
-    cnri {cecill gpl}
-    cpl {cecill gpl}
     cecill {afl agpl apache apsl beopen bsd-old cddl cnri cpl epl gd gplconflict ibmpl lppl mpl noncommercial openssl php qpl restrictive/distributable ruby ssleay zpl-1}
-    epl {cecill gpl}
-    freetype {gpl-2}
-    gd {cecill gpl}
-    gpl {afl agpl apache-1 apache-1.1 apsl beopen cddl cnri bsd-old cpl epl gd gplconflict ibmpl lppl mpl noncommercial openssl php qpl restrictive/distributable ruby ssleay zpl-1}
-    gpl-1 {apache gpl-3 gpl-3+ lgpl-3 lgpl-3+}
-    gpl-2 {apache freetype gpl-3 gpl-3+ lgpl-3 lgpl-3+}
-    gpl-3 {gpl-1 gpl-2}
-    gpl-3+ {gpl-1 gpl-2}
-    ibmpl {cecill gpl}
-    lgpl-3 {gpl-1 gpl-2}
-    lgpl-3+ {gpl-1 gpl-2}
-    lppl {cecill gpl}
-    mpl {cecill gpl}
-    openssl {cecill gpl}
+    cnri {agpl cecill gpl}
+    cpl {agpl cecill gpl}
+    epl {agpl cecill gpl}
+    freetype {agpl-1 gpl-2}
+    gd {agpl cecill gpl}
+    gpl {afl apache-1 apache-1.1 apsl beopen cddl cnri bsd-old cpl epl gd gplconflict ibmpl lppl mpl noncommercial openssl php qpl restrictive/distributable ruby ssleay zpl-1}
+    gpl-1 {agpl apache gpl-3 gpl-3+ lgpl-3 lgpl-3+}
+    gpl-2 {agpl apache freetype gpl-3 gpl-3+ lgpl-3 lgpl-3+}
+    gpl-3 {agpl-1 gpl-1 gpl-2}
+    gpl-3+ {agpl-1 gpl-1 gpl-2}
+    gplconflict {agpl cecill gpl}
+    ibmpl {agpl cecill gpl}
+    lgpl-3 {agpl-1 gpl-1 gpl-2}
+    lgpl-3+ {agpl-1 gpl-1 gpl-2}
+    lppl {agpl cecill gpl}
+    mpl {agpl cecill gpl}
+    noncommercial {agpl cecill gpl}
+    openssl {agpl cecill gpl}
     opensslexception [all_licenses_except openssl ssleay]
-    php {cecill gpl}
-    qpl {cecill gpl}
+    php {agpl cecill gpl}
+    qpl {agpl cecill gpl}
     restrictive/distributable {agpl cecill gpl}
-    ruby {cecill gpl}
-    ssleay {cecill gpl}
-    zpl-1 {cecill gpl}"
+    ruby {agpl cecill gpl}
+    ssleay {agpl cecill gpl}
+    zpl-1 {agpl cecill gpl}"
 
 proc printUsage {} {
     puts "Usage: $::argv0 \[-hvV\] \[-t macports-tcl-path\] port-name \[variants...\]"
