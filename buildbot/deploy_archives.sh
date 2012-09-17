@@ -31,9 +31,7 @@ if [[ -z "$LOCKFILE" ]]; then
     LOCKFILE="./deploy.lock"
 fi
 
-while ! shlock -f $LOCKFILE -p $$; do
-    sleep 1
-done
+lockfile $LOCKFILE.$$ -r -1
 
 if [[ ! -d $ULPATH ]]; then
     echo $ULPATH does not exist!
@@ -69,5 +67,6 @@ else
 fi
 
 # clean up after ourselves
-rm $LOCKFILE
+rm -f $LOCKFILE.$$
 rm -rf $ULPATH
+
