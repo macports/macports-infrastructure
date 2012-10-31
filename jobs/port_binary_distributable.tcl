@@ -255,9 +255,14 @@ proc check_licenses {portName variantInfo verbose} {
             }
         }
 
+        # skip deps that are explicitly stated to not conflict
+        array unset aPort_noconflict_ports
+        foreach noconflict_port [lindex $aPortInfo 3] {
+            set aPort_noconflict_ports($noconflict_port) 1
+        }
         # add its deps to the list
         foreach possiblyNewPort [lindex $aPortInfo 0] {
-            if {![info exists portSeen($possiblyNewPort)]} {
+            if {![info exists portSeen($possiblyNewPort)] && ![info exists aPort_noconflict_ports($possiblyNewPort)]} {
                 lappend portList $possiblyNewPort
             }
         }
