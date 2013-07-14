@@ -117,8 +117,8 @@ fi
 
 # generate platform-specific indexes
 pushd ${PORTS} >> /dev/null
-# build MP trunk in a private location for indexing
-pushd ${TBASE} >> /dev/null
+# build MP in a private location for indexing
+pushd ${RBASE} >> /dev/null
 ${MKDIR} -p ${TCLPKG}
 ./configure \
     --prefix=${PREFIX} \
