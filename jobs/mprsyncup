@@ -122,6 +122,7 @@ ${MKDIR} -p ${TCLPKG}
 make clean
 make
 make install
+make distclean
 popd
 
 for PLATFORM in $PLATFORMS; do
