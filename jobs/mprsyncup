@@ -88,6 +88,10 @@ if [ ! -n ${RELEASE_URL} ]; then
     echo "no RELEASE_URL specified in svn trunk, bailing out!"
     exit 1
 fi
+# cleanup up the working copy if it is locked
+if [ -f ${RBASE}/.svn/lock ]; then
+    ${CLEANUP} ${RBASE}
+fi
 if [ -d ${RBASE}/.svn ]; then
     ${SVN} switch ${RELEASE_URL} ${RBASE}
 else
