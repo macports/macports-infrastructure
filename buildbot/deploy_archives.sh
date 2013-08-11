@@ -15,8 +15,10 @@ if [[ -z "$ULPATH" ]]; then
     # workaround for buildbot not accepting WithProperties in env
     if [[ -n "$1" ]]; then
         ULPATH="$1"
+        # assume a unique path is used per builder so no locking is needed
     else
         ULPATH="./archive_staging"
+        NEED_LOCK=1
     fi
 fi
 
@@ -27,15 +29,20 @@ fi
 
 # buildbot apparently doesn't run jobs on the master in different dirs or
 # prevent them from running simultaneously
-if [[ -z "$LOCKFILE" ]]; then
-    LOCKFILE="./deploy.lock"
-fi
+if [[ -n "$NEED_LOCK" ]]; then
+    if [[ -z "$LOCKFILE" ]]; then
+        LOCKFILE="./deploy.lock"
+    fi
 
-lockfile $LOCKFILE.$$ -r -1
+    echo Acquiring lock...
+    lockfile $LOCKFILE -r -1
+fi
 
 if [[ ! -d $ULPATH ]]; then
     echo $ULPATH does not exist!
-    rm $LOCKFILE
+    if [[ -n "$NEED_LOCK" ]]; then
+        rm -f $LOCKFILE
+    fi
     exit 1
 fi
 
@@ -50,7 +57,9 @@ if [[ -n "`ls ${ULPATH}`" ]]; then
                 chmod a+r ${ULPATH}/${portname}/${aname}.rmd160
             else
                 rm -rf $ULPATH
-                rm $LOCKFILE
+                if [[ -n "$NEED_LOCK" ]]; then
+                    rm -f $LOCKFILE
+                fi
                 exit 1
             fi
         fi
@@ -67,6 +76,8 @@ else
 fi
 
 # clean up after ourselves
-rm -f $LOCKFILE.$$
+if [[ -n "$NEED_LOCK" ]]; then
+    rm -f $LOCKFILE
+fi
 rm -rf $ULPATH
 
