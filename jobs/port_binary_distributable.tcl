@@ -182,7 +182,7 @@ proc check_licenses {portName variantInfo verbose} {
         lappend top_license_names $sub_names
         if {!$any_good} {
             if {$verbose} {
-                puts "'$portName' has license '$lic' which is not known to be distributable"
+                puts "\"$portName\" is not distributable because its license \"$lic\" is not known to be distributable"
             }
             return 1
         }
@@ -243,13 +243,13 @@ proc check_licenses {portName variantInfo verbose} {
 
             if {!$any_good} {
                 if {$verbose} {
-                    puts "${portName}'s dependency '$aPort' has license '$lic' which is not known to be distributable"
+                    puts "\"$portName\" is not distributable because its dependency \"$aPort\" has license \"$lic\" which is not known to be distributable"
                 }
                 return 1
             }
             if {!$any_compatible} {
                 if {$verbose} {
-                    puts "dependency '$aPort' has license '$full_lic' which conflicts with license '$top_lic' from '$portName'"
+                    puts "\"$portName\" is not distributable because its license \"$top_lic\" conflicts with license \"$full_lic\" of dependency \"$aPort\""
                 }
                 return 1
             }
@@ -269,7 +269,7 @@ proc check_licenses {portName variantInfo verbose} {
     }
 
     if {$verbose} {
-        puts "$portName is distributable"
+        puts "\"$portName\" is distributable"
     }
     return 0
 }
