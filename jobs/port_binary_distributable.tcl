@@ -122,7 +122,7 @@ proc infoForPort {portName variantInfo} {
     mportclose $mport
 
     foreach dependencyType $check_deptypes {
-        if {[info exists portInfo($dependencyType)] && [string length $portInfo($dependencyType)] > 0} {
+        if {[info exists portInfo($dependencyType)] && $portInfo($dependencyType) ne ""} {
             foreach dependency $portInfo($dependencyType) {
                 set afterColon [expr {[string last ":" $dependency] + 1}]
                 lappend dependencyList [string range $dependency $afterColon end]

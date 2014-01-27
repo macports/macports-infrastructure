@@ -75,7 +75,7 @@ set HEADERS "To: $SPAM_LOVERS\r\nFrom: $FROM\r\nSubject: $SUBJECT\r\n\r\n"
 # handle command line arguments
 set create_tables true
 if {[llength $argv]} {
-    if {[lindex $argv 0] == "--create-tables"} {
+    if {[lindex $argv 0] eq "--create-tables"} {
         set create_tables true
     }
 }
