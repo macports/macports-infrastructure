@@ -146,8 +146,8 @@ proc infoForPort {portName variantInfo} {
 # return license with any trailing dash followed by a number and/or plus sign removed
 proc remove_version {license} {
     set dash [string last - $license]
-    if {$dash != -1 && [regexp {[0-9.+]+} [string range $license [expr $dash + 1] end]]} {
-        return [string range $license 0 [expr $dash - 1]]
+    if {$dash != -1 && [regexp {[0-9.+]+} [string range $license [expr {$dash + 1}] end]]} {
+        return [string range $license 0 [expr {$dash - 1}]]
     } else {
         return $license
     }
