@@ -66,7 +66,7 @@ if [[ -n "`ls ${ULPATH}`" ]]; then
     done
     
     if [[ -n "$DLHOST" ]]; then
-        strace -f -t -T rsync -rlDzv --ignore-existing ${ULPATH}/ ${DLHOST}:${DLPATH}
+        rsync -rlDzv --ignore-existing ${ULPATH}/ ${DLHOST}:${DLPATH}
     else
         rsync -rlDzv --ignore-existing ${ULPATH}/ ${DLPATH}
     fi
