@@ -1,4 +1,4 @@
-#!/opt/local/bin/tclsh
+#!@TCLSH@
 # -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:filetype=tcl:et:sw=4:ts=4:sts=4
 #
 # PortIndex2MySQL.tcl
@@ -178,12 +178,6 @@ if {[file exists $lockfile]} {
 }
 
 # Load macports1.0 so that we can use some of its procs and the portinfo array.
-if {[catch { source [file join "@macports_tcl_dir@" macports1.0 macports_fastload.tcl] } errstr]} {
-    puts $runlog_fd "${::errorInfo}"
-    puts $runlog_fd "Failed to locate the macports1.0 Tcl package file: $errstr"
-    cleanup lockfile
-    terminate 1
-}
 if {[catch { package require macports } errstr]} {
     puts $runlog_fd "${::errorInfo}"
     puts $runlog_fd "Failed to load the macports1.0 Tcl package: $errstr"
