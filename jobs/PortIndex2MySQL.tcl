@@ -1,4 +1,4 @@
-#!@TCLSH@
+#!/opt/local/bin/port-tclsh
 # -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:filetype=tcl:et:sw=4:ts=4:sts=4
 #
 # PortIndex2MySQL.tcl
@@ -58,18 +58,31 @@
 #####
 
 
+# Configuration variables. Fill in the blank strings.
+#
+# Email addresses that get failure notifications - e.g. "admin@macosforge.org"
+set SPAM_LOVERS ""
+# File to read the db password from - e.g. "/var/macports/script_data"
+set passwdfile ""
+# Database abstraction variables:
+# name of the mysql executable
+set mysql_exe "mysql"
+# path where the mysql executable is located (only needed if not in the default PATH)
+set mysql_exe_path ""
+set sqlfile "/tmp/portsdb.sql"
+set portsdb_host localhost
+set portsdb_name macports
+set portsdb_user macports
 
-# Runtime information log file and reciepient.
+# Runtime information log file and recipient.
 set runlog "/tmp/portsdb.log"
 set runlog_fd [open $runlog w+]
 set lockfile "/tmp/portsdb.lock"
 set mailprog "/usr/sbin/sendmail"
 set DATE [clock format [clock seconds] -format "%A %Y-%m-%d at %T"]
 
-#set SPAM_LOVERS example@hostname.com
-
 set SUBJECT "PortIndex2MySQL run failure on $DATE"
-set FROM macports-mgr@lists.macosforge.org
+set FROM noreply@macports.org
 set HEADERS "To: $SPAM_LOVERS\r\nFrom: $FROM\r\nSubject: $SUBJECT\r\n\r\n"
 
 # handle command line arguments
@@ -141,6 +154,12 @@ proc ui_channels {priority} {
 
 # Procedure to catch the database password from a protected file.
 proc getpasswd {passwdfile} {
+    if {$passwdfile eq ""} {
+        global lockfile lockfile_fd
+        ui_error "passwdfile is empty, did you forget to set it?"
+        cleanup lockfile
+        terminate 1
+    }
     if {[catch {open $passwdfile r} passwdfile_fd]} {
         global lockfile lockfile_fd
         ui_error "${::errorCode}: $passwdfile_fd"
@@ -197,14 +216,8 @@ if {[catch {mportinit ui_options} errstr]} {
 }
 
 
-# Database abstraction variables:
-set sqlfile "/tmp/portsdb.sql"
-set portsdb_host localhost
-set portsdb_name macports
-set portsdb_user macports
-set passwdfile "/opt/local/share/macports/resources/portmgr/password_file"
 set portsdb_passwd [getpasswd $passwdfile]
-set portsdb_cmd [macports::findBinary mysql5]
+set portsdb_cmd [macports::findBinary $mysql_exe $mysql_exe_path]
 
 
 # Flat text file to which sql statements are written.
