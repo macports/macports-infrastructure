@@ -7,7 +7,7 @@
 # Juan Manuel Palacios | jmpp@macports.org
 # 22-Nov-2007
 # Eric Le Lay | elelay@macports.org
-# 24-sept-2013
+# 24-Sep-2013
 # $Id$
 #
 # Copyright (c) 2013 Eric Le Lay, The Macports Project
