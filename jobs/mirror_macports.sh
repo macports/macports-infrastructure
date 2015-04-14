@@ -41,7 +41,7 @@ do
   $PORT mirror $P;
 
   # for each variant
-  for V in `$PORT -q variants $P | $CUT -d " " -f 1 | $CUT -d ":" -f 1 | $GREP -v universal | $XARGS`;
+  for V in `$PORT -q variants $P | $CUT -c 4- | $CUT -d ":" -f 1 | $GREP -v universal | $XARGS`;
   do
     # mirror with each variant
     echo "Mirroring ${P} +${V}";
@@ -50,15 +50,15 @@ do
   done
 
   # mirror with each platform (can exclude the one the server is running)
-  for VERS in "8 9";
+  for VERS in 8 9;
   do
-    for ARCH in "i386 powerpc";
+    for ARCH in i386 powerpc;
     do
       echo "Mirroring ${P} with platform darwin ${VERS} ${ARCH}"
       $PORT mirror $P os.platform=darwin os.subplatform=macosx os.major=${VERS} os.arch=${ARCH}
     done
   done
-  for VERS in "10 11 12 13 14";
+  for VERS in 10 11 12 13 14;
   do
     echo "Mirroring ${P} with platform darwin ${VERS} i386"
     $PORT mirror $P os.platform=darwin os.subplatform=macosx os.major=${VERS} os.arch=i386
