@@ -58,7 +58,7 @@ proc all_licenses_except { args } {
 # keep these values sorted
 array set license_conflicts \
     "afl {agpl cecill gpl}
-    agpl {afl apache-1 apache-1.1 apsl beopen bsd-old cddl cecill cnri cpl epl gd gpl-1 gpl-2 gplconflict ibmpl lppl mpl noncommercial openssl php qpl restrictive/distributable ruby ssleay zpl-1}
+    agpl {afl apache-1 apache-1.1 apsl beopen bsd-old cc-by-1 cc-by-2 cc-by-2.5 cc-by-3 cc-by-sa cddl cecill cnri cpl epl gd gpl-1 gpl-2 gplconflict ibmpl lppl mpl noncommercial openssl php qpl restrictive/distributable ruby ssleay zpl-1}
     agpl-1 {apache freetype gpl-3 gpl-3+ lgpl-3 lgpl-3+}
     apache {agpl-1 cecill gpl-1 gpl-2}
     apache-1 {agpl gpl}
@@ -66,14 +66,19 @@ array set license_conflicts \
     apsl {agpl cecill gpl}
     beopen {agpl cecill gpl}
     bsd-old {agpl cecill gpl}
+    cc-by-1 {agpl cecill gpl}
+    cc-by-2 {agpl cecill gpl}
+    cc-by-2.5 {agpl cecill gpl}
+    cc-by-3 {agpl cecill gpl}
+    cc-by-sa {agpl cecill gpl}
     cddl {agpl cecill gpl}
-    cecill {afl agpl apache apsl beopen bsd-old cddl cnri cpl epl gd gplconflict ibmpl lppl mpl noncommercial openssl php qpl restrictive/distributable ruby ssleay zpl-1}
+    cecill {afl agpl apache apsl beopen bsd-old cc-by-1 cc-by-2 cc-by-2.5 cc-by-3 cc-by-sa cddl cnri cpl epl gd gplconflict ibmpl lppl mpl noncommercial openssl php qpl restrictive/distributable ruby ssleay zpl-1}
     cnri {agpl cecill gpl}
     cpl {agpl cecill gpl}
     epl {agpl cecill gpl}
     freetype {agpl-1 gpl-2}
     gd {agpl cecill gpl}
-    gpl {afl apache-1 apache-1.1 apsl beopen cddl cnri bsd-old cpl epl gd gplconflict ibmpl lppl mpl noncommercial openssl php qpl restrictive/distributable ruby ssleay zpl-1}
+    gpl {afl apache-1 apache-1.1 apsl beopen bsd-old cc-by-1 cc-by-2 cc-by-2.5 cc-by-3 cc-by-sa cddl cnri cpl epl gd gplconflict ibmpl lppl mpl noncommercial openssl php qpl restrictive/distributable ruby ssleay zpl-1}
     gpl-1 {agpl apache gpl-3 gpl-3+ lgpl-3 lgpl-3+}
     gpl-2 {agpl apache freetype gpl-3 gpl-3+ lgpl-3 lgpl-3+}
     gpl-3 {agpl-1 gpl-1 gpl-2}
