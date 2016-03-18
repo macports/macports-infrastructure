@@ -7,5 +7,7 @@
 	"htpasswdfile": "htpasswd",
 	"mpbbsvnurl":   "https://svn.macports.org/repository/macports/contrib/mp-buildbot",
 	"svnurl":       "https://svn.macports.org/repository/macports/trunk",
-	"archivesite":  "http://packages.macports.org"
+	"archivesite":  "http://packages.macports.org",
+	"slaveprefix":  "/opt/local",
+	"toolsprefix":  "/opt/mports"
 }
