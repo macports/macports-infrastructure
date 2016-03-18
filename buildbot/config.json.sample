@@ -6,6 +6,6 @@
 	"buildboturl":  "http://localhost:8010/",
 	"htpasswdfile": "htpasswd",
 	"mpbbsvnurl":   "https://svn.macports.org/repository/macports/contrib/mp-buildbot"
-	"svnurl":       "https://svn.macports.org/repository/macports"
+	"svnurl":       "https://svn.macports.org/repository/macports/trunk"
 	"archivesite":  "http://packages.macports.org"
 }
