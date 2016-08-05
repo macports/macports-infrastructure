@@ -78,10 +78,9 @@ Install buildbot-slave in your *normal* `/opt/local` prefix:
 
 #### 3. Create new directory with buildbot slave configuration
 
-Create a directory that will contain the buildslaves working directory and the home directory for the buildbot user: 
+Create a directory that will contain the buildslaves working directory. 
 
     sudo mkdir -p /opt/mp-buildbot
-    sudo mkdir -p /opt/mp-buildbot/home
     sudo chown -R $USER:buildbot /opt/mp-buildbot
     sudo chmod -R 775 /opt/mp-buildbot
 
@@ -129,33 +128,11 @@ Reconfigure the buildbot master:
 
 These commands start the new build slaves. They should connect to the master successfully and be visible in the webinterface.
 
-    sudo -u buildbot env HOME=/opt/mp-buildbot/home buildslave start /opt/mp-buildbot/slave-base
+    sudo -H -u buildbot buildslave start /opt/mp-buildbot/slave-base
     sudo -H buildslave start /opt/mp-buildbot/slave-ports
-    
-
-#### 5. Configure Subversion Server Certificate Validation
-
-For Mac OS X >= 10.7, you will have to manually accept the Subversion server certificate for the user running the buildslave with the commands below:
-
-    sudo -u buildbot env HOME=/opt/mp-buildbot/home /usr/bin/svn info https://svn.macports.org/repository/macports/
-    sudo -H /usr/bin/svn info https://svn.macports.org/repository/macports/
-    
-For both of these commands, you will see the following error message:
-
-    Error validating server certificate for 'https://svn.macports.org:443':
-     - The certificate is not issued by a trusted authority. Use the
-       fingerprint to validate the certificate manually!
-    Certificate information:
-     - Hostname: *.macports.org
-     - Valid: from Wed, 02 Mar 2016 07:47:38 GMT until Tue, 02 May 2017 01:19:52 GMT
-     - Issuer: GlobalSign nv-sa, BE
-     - Fingerprint: 3e:af:d7:ea:81:a4:92:33:b6:bc:da:38:76:c3:15:54:9a:09:50:e0
-    (R)eject, accept (t)emporarily or accept (p)ermanently?
-    
-After verifying the Subversion server certificate fingerprint, choose answer 'p' for permanently. This decision will be stored in the home directories of the user buildbot and root, respectively.
 
 
-#### 6. Test your first build
+#### 5. Test your first build
 
 TODO
 
