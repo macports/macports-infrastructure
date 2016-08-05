@@ -95,14 +95,14 @@ Create two buildslaves, one for base running as the buildbot user, one for ports
                 create-slave --umask 022 \
                 /opt/mp-buildbot/slave-base \
                 localhost:9989 \
-                base-$OSXVERS-$ARCH \
+                base-${OSXVERS}_${ARCH} \
                 $PASSWORD
     
     sudo -H buildslave \
                 create-slave --umask 022 \
                 /opt/mp-buildbot/slave-ports \
                 localhost:9989 \
-                ports-$OSXVERS-$ARCH \
+                ports-${OSXVERS}_${ARCH} \
                 $PASSWORD
 
 #### 3. Add new builldbot slaves to buildbot master configuration
