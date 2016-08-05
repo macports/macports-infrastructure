@@ -59,7 +59,7 @@ After making any changes to `master.cfg`, you can reload the configuration with 
 
 This will use your copy of MacPorts in /opt/local for all tooling, but actual builds on the slave will be made in a separate prefix. Make sure this installation provides an up-to-date ports tree.
 
-You will need the subversion port in this prefix for tooling, as `/usr/bin/svn` will have problems to validate the Subversion server certificate due to a well-know bug in Mac OS X >= 10.7.
+You will need the subversion port in this prefix for tooling, as `/usr/bin/svn` will have problems validating the Subversion server certificate due to a well-known bug in Mac OS X >= 10.7.
 
     sudo port install subversion
 
