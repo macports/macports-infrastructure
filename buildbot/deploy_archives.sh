@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 # download server hostname
 if [[ -z "$DLHOST" ]]; then
     DLHOST=""
