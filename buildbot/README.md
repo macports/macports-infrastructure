@@ -2,7 +2,14 @@
 
 ## Setting up both buildbot master and slave for testing on localhost
 
-These steps explain how to install buildbot locally for hacking on the infrastructure. This will run both the buildbot master and buildbot slave on localhost. Note the buildbot slave will run in a non-default prefix, to avoid interfering with your installation in /opt/local.
+These steps explain how to install buildbot locally for hacking on the infrastructure. This will run both the buildbot master and buildbot slave on localhost. Note that the buildbot slave will run in a non-default prefix, to avoid interfering with your installation in `/opt/local`.
+
+For a production setup you would probably want the reverse:
+
+  * let the buildbot slave build ports in `/opt/local`
+  * place the auxiliary installation for tools somewhere else, for example under `/opt/mports`
+
+The exact locations can be configured with `config.json.sample`.
 
 ### Setting up buildbot master on localhost
 
@@ -27,7 +34,7 @@ These steps explain how to install buildbot locally for hacking on the infrastru
     cp .../path/to/contrib/buildbot-test/config.json.sample config.json
     cp .../path/to/contrib/buildbot-test/slaves.json.sample slaves.json
 
-Check settings in config.json and adapt as needed.
+Check settings in `config.json` and adapt as needed.
 
 
 #### 4. Set up authentication
@@ -57,7 +64,7 @@ After making any changes to `master.cfg`, you can reload the configuration with 
 
 ### Setting up buildbot slave on localhost
 
-This will use your copy of MacPorts in /opt/local for all tooling, but actual builds on the slave will be made in a separate prefix. Make sure this installation provides an up-to-date ports tree.
+This will use your copy of MacPorts in `/opt/local` for all tooling, but actual builds on the slave will be made in a separate prefix. Make sure this installation provides an up-to-date ports tree.
 
 You will need the subversion port in this prefix for tooling, as `/usr/bin/svn` will have problems validating the Subversion server certificate due to a well-known bug in Mac OS X >= 10.7.
 
