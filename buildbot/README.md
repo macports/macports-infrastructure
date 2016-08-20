@@ -2,12 +2,17 @@
 
 ## Setting up both buildbot master and slave for testing on localhost
 
-These steps explain how to install buildbot locally for hacking on the infrastructure. This will run both the buildbot master and buildbot slave on localhost. Note that the buildbot slave will run in a non-default prefix, to avoid interfering with your installation in `/opt/local`.
+These steps explain how to install buildbot locally for hacking on the
+infrastructure. This will run both the buildbot master and buildbot
+slave on localhost. Note that the buildbot slave will run in
+a non-default prefix, to avoid interfering with your installation in
+`/opt/local`.
 
 For a production setup you would probably want the reverse:
 
   * let the buildbot slave build ports in `/opt/local`
-  * place the auxiliary installation for tools somewhere else, for example under `/opt/mports`
+  * place the auxiliary installation for tools somewhere else, for
+    example under `/opt/mports`
 
 The exact locations can be configured with `config.json.sample`.
 
@@ -45,7 +50,9 @@ Check settings in `config.json` and adapt as needed.
 
 #### 5. Starting buildbot
 
-To start buildbot, execute the `start` command. The OS X firewall will request you to allow access for Python. Then you can view the buildbot instance in your web browser. 
+To start buildbot, execute the `start` command. The OS X firewall will
+request you to allow access for Python. Then you can view the buildbot
+instance in your web browser.
 
     buildbot start /opt/mp-buildbot/master
     open http://localhost:8010/
@@ -53,7 +60,10 @@ To start buildbot, execute the `start` command. The OS X firewall will request y
 
 #### 5. Testing changes
 
-After making any changes to `master.cfg`, you can reload the configuration with the `reconfig` command. This is faster than doing a full `restart`. In a similar way, you can completely `stop` the buildbot.
+After making any changes to `master.cfg`, you can reload the
+configuration with the `reconfig` command. This is faster than doing
+a full `restart`. In a similar way, you can completely `stop` the
+buildbot.
 
     buildbot reconfig /opt/mp-buildbot/master
  
@@ -64,16 +74,21 @@ After making any changes to `master.cfg`, you can reload the configuration with 
 
 ### Setting up buildbot slave on localhost
 
-This will use your copy of MacPorts in `/opt/local` for all tooling, but actual builds on the slave will be made in a separate prefix. Make sure this installation provides an up-to-date ports tree.
+This will use your copy of MacPorts in `/opt/local` for all tooling, but
+actual builds on the slave will be made in a separate prefix. Make sure
+this installation provides an up-to-date ports tree.
 
-You will need the subversion port in this prefix for tooling, as `/usr/bin/svn` will have problems validating the Subversion server certificate due to a well-known bug in Mac OS X >= 10.7.
+You will need the subversion port in this prefix for tooling, as
+`/usr/bin/svn` will have problems validating the Subversion server
+certificate due to a well-known bug in Mac OS X >= 10.7.
 
     sudo port install subversion
 
 
 #### 1. Install MacPorts into a new prefix
 
-You need to use a new prefix for this installation. These instructions will use `/opt/mp-buildbot/prefix`.
+You need to use a new prefix for this installation. These instructions
+will use `/opt/mp-buildbot/prefix`.
 
 You will have to install this from source following
 
@@ -95,7 +110,8 @@ Create a directory that will contain the buildslaves working directory.
     sudo chown -R $USER:buildbot /opt/mp-buildbot
     sudo chmod -R 775 /opt/mp-buildbot
 
-Create two buildslaves, one for base running as the buildbot user, one for ports running as root:
+Create two buildslaves, one for base running as the buildbot user, one
+for ports running as root:
 
     OSXVERS=$(sw_vers -productVersion | grep -oE '^[0-9]+\.[0-9]+')
     ARCH=$(uname -m)
@@ -117,7 +133,9 @@ Create two buildslaves, one for base running as the buildbot user, one for ports
 
 #### 3. Add new builldbot slaves to buildbot master configuration
 
-Add the buildslaves to your buildmaster's master.cfg using the password you provided when creating them. Then reload the buildbot master configuration.
+Add the buildslaves to your buildmaster's master.cfg using the password
+you provided when creating them. Then reload the buildbot master
+configuration.
 
     $EDITOR /opt/mp-buildbot/master/slaves.json
 
@@ -137,7 +155,8 @@ Reconfigure the buildbot master:
 
 #### 4. Start the two buildslaves
 
-These commands start the new build slaves. They should connect to the master successfully and be visible in the webinterface.
+These commands start the new build slaves. They should connect to the
+master successfully and be visible in the webinterface.
 
     sudo -H -u buildbot buildslave start /opt/mp-buildbot/slave-base
     sudo -H buildslave start /opt/mp-buildbot/slave-ports
@@ -150,6 +169,8 @@ TODO
 
 ## Setting up buildbot master and slaves for production
 
-These instructions explain how to install buildbot in a production environment, in which master slaves run on different machines to produce MacPorts packages.
+These instructions explain how to install buildbot in a production
+environment, in which master slaves run on different machines to produce
+MacPorts packages.
 
 TODO
