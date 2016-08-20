@@ -131,7 +131,7 @@ for ports running as root:
                 ports-${OSXVERS}_${ARCH} \
                 $PASSWORD
 
-#### 3. Add new builldbot slaves to buildbot master configuration
+#### 3. Add new buildbot slaves to buildbot master configuration
 
 Add the buildslaves to your buildmaster's master.cfg using the password
 you provided when creating them. Then reload the buildbot master
@@ -156,7 +156,7 @@ Reconfigure the buildbot master:
 #### 4. Start the two buildslaves
 
 These commands start the new build slaves. They should connect to the
-master successfully and be visible in the webinterface.
+master successfully and be visible in the web interface.
 
     sudo -H -u buildbot buildslave start /opt/mp-buildbot/slave-base
     sudo -H buildslave start /opt/mp-buildbot/slave-ports
