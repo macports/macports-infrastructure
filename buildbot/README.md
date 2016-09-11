@@ -177,3 +177,12 @@ config.json should use prefixes such that packages are produced for /opt/local:
 
 When setting up the slaves, specify the hostname and port of the machine
 running the buildbot master instead of "localhost:9989".
+
+## Troubleshooting
+
+# Subversion checkout fails
+
+> svn: E170013: Unable to connect to a repository at URL 'https://svn.macports.org/repository/macports/contrib/mp-buildbot'
+> svn: E230001: Server SSL certificate verification failed: issuer is not trusted
+
+Install the `subversion` port to 'toolsprefix'.
