@@ -133,13 +133,11 @@ for ports running as root:
 
 #### 3. Add new buildbot slaves to buildbot master configuration
 
-Add the buildslaves to your buildmaster's master.cfg using the password
-you provided when creating them. Then reload the buildbot master
-configuration.
+Add the buildslaves to your buildmaster's slaves.json using the passwords you
+provided when creating them. You will also need to change the list of
+'build_platforms' to the local platform you have set up a build slave for.
 
     $EDITOR /opt/mp-buildbot/master/slaves.json
-
-XXX: edit build\_platforms in master.cfg
 
 IMPORTANT! Change the following configuration options in config.json:
 
@@ -169,8 +167,13 @@ TODO
 
 ## Setting up buildbot master and slaves for production
 
-These instructions explain how to install buildbot in a production
-environment, in which master slaves run on different machines to produce
-MacPorts packages.
+In a production environment the slaves run on different machines to produce
+MacPorts packages for various platforms. Most of the configuration above
+applies to the production environment. The configuration of the master in
+config.json should use prefixes such that packages are produced for /opt/local:
 
-TODO
+> "slaveprefix":  "/opt/local"
+> "toolsprefix":  "/opt/mports"
+
+When setting up the slaves, specify the hostname and port of the machine
+running the buildbot master instead of "localhost:9989".
