@@ -1,5 +1,7 @@
 {
     "build_platforms": [
+        "10.5_ppc",
+        "10.5_ppc_legacy",
         "10.6_x86_64",
         "10.6_x86_64_legacy",
         "10.6_i386",
@@ -14,6 +16,8 @@
         "10.12_x86_64"
     ],
     "slaves": {
+        "base-10.5_ppc": "",
+        "ports-10.5_ppc_legacy": "",
         "base-10.6_x86_64": "",
         "ports-10.6_i386": "",
         "ports-10.6_i386_legacy": "",
