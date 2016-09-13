@@ -9,5 +9,21 @@
     "svnurl":       "https://svn.macports.org/repository/macports/trunk",
     "archivesite":  "https://packages.macports.org",
     "slaveprefix":  "/opt/local",
-    "toolsprefix":  "/opt/mports"
+    "toolsprefix":  "/opt/mports",
+    "deploy": {
+        "www": {
+            "host": "",
+            "user": "",
+            "sshkeyfile": "",
+            "sshknownhostsfile": "ssh_known_hosts",
+            "destpath": ""
+        },
+        "guide": {
+            "host": "",
+            "user": "",
+            "sshkeyfile": "",
+            "sshknownhostsfile": "ssh_known_hosts",
+            "destpath": ""
+        }
+    }
 }
