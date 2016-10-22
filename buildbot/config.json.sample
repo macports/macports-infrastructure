@@ -1,5 +1,5 @@
 {
-    "production":   0,
+    "production":   false,
     "privkey":      "/var/keys/macports-privkey.pem",
     "slaveport":    9989,
     "httpport":     8010,
