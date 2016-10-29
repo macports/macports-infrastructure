@@ -1,13 +1,7 @@
 {
     "production":   false,
     "privkey":      "/var/keys/macports-privkey.pem",
-    "slaveport":    9989,
-    "httpport":     8010,
-    "buildboturl":  "http://localhost:8010/",
-    "htpasswdfile": "htpasswd",
-    "mpbbsvnurl":   "https://svn.macports.org/repository/macports/contrib/mp-buildbot",
-    "svnurl":       "https://svn.macports.org/repository/macports/trunk",
-    "archivesite":  "https://packages.macports.org",
+    "buildboturl":  "http://domain.tld:8010/",
     "slaveprefix":  "/opt/local",
     "toolsprefix":  "/opt/mports",
     "deploy": {
