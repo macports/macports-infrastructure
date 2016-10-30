@@ -13,6 +13,13 @@
             "sshknownhostsfile": "ssh_known_hosts",
             "destpath": ""
         },
+        "portindex": {
+            "host": "",
+            "user": "",
+            "sshkeyfile": "",
+            "sshknownhostsfile": "ssh_known_hosts",
+            "destpath": ""
+        },
         "guide": {
             "host": "",
             "user": "",
