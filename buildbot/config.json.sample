@@ -2,7 +2,6 @@
     "production":   false,
     "privkey":      "/var/keys/macports-privkey.pem",
     "buildboturl":  "http://domain.tld:8010/",
-    "githubsecret": "TOPSECRET",
     "slaveprefix":  "/opt/local",
     "toolsprefix":  "/opt/mports",
     "deploy": {
