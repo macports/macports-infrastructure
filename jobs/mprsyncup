@@ -44,7 +44,6 @@ OPENSSL="/usr/bin/openssl"
 # Paths we'll work on:
 ROOT=/var/tmp/macports
 PREFIX=${ROOT}/opt/local
-TCLPKG=${PREFIX}/lib/tcl
 SVNROOT=/var/tmp/macports
 TBASE=${SVNROOT}/trunk/base
 RBASE=${SVNROOT}/release/base
@@ -120,12 +119,10 @@ fi
 pushd ${PORTS} >> /dev/null
 # build MP in a private location for indexing
 pushd ${RBASE} >> /dev/null
-${MKDIR} -p ${TCLPKG}
 ./configure \
     --prefix=${PREFIX} \
     --with-install-group="$(id -gn)" \
-    --with-install-user="$(id -un)" \
-    --with-tclpackage=${TCLPKG}
+    --with-install-user="$(id -un)"
 make clean
 make
 make install
