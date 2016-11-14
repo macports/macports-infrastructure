@@ -123,6 +123,8 @@ pushd ${RBASE} >> /dev/null
 ${MKDIR} -p ${TCLPKG}
 ./configure \
     --prefix=${PREFIX} \
+    --with-install-group="$(id -gn)" \
+    --with-install-user="$(id -un)" \
     --with-tclpackage=${TCLPKG}
 make clean
 make
