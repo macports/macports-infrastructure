@@ -124,7 +124,11 @@ if [[ ! -x ${PREFIX}/bin/port || ! -r ${RBASE}/config/macports_version || "$(<${
         --with-install-group="$(id -gn)" \
         --with-install-user="$(id -un)"
     make clean
-    make
+    JOBS=""
+    if [ "$(uname -s)" == "Darwin" ]; then
+        JOBS="-j$(sysctl -n hw.activecpu)"
+    fi
+    make $JOBS
     make install
     make distclean
     popd
