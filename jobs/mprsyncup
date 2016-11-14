@@ -117,16 +117,18 @@ else
 fi
 
 # build MP in a private location for indexing
-pushd ${RBASE} >> /dev/null
-./configure \
-    --prefix=${PREFIX} \
-    --with-install-group="$(id -gn)" \
-    --with-install-user="$(id -un)"
-make clean
-make
-make install
-make distclean
-popd
+if [[ ! -x ${PREFIX}/bin/port || ! -r ${RBASE}/config/macports_version || "$(<${RBASE}/config/macports_version)" != "$(${PREFIX}/bin/port -q version)" ]]; then
+    pushd ${RBASE} >> /dev/null
+    ./configure \
+        --prefix=${PREFIX} \
+        --with-install-group="$(id -gn)" \
+        --with-install-user="$(id -un)"
+    make clean
+    make
+    make install
+    make distclean
+    popd
+fi
 
 # generate platform-specific indexes
 pushd ${PORTS} >> /dev/null
