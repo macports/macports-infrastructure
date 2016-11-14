@@ -40,6 +40,7 @@ MKDIR="/bin/mkdir"
 LN="/bin/ln"
 TAR="/usr/bin/tar"
 OPENSSL="/usr/bin/openssl"
+SED="/usr/bin/sed"
 
 # Paths we'll work on:
 ROOT=/var/tmp/macports
@@ -115,8 +116,6 @@ else
     ${SVN} checkout ${PORTSURL} ${PORTS}
 fi
 
-# generate platform-specific indexes
-pushd ${PORTS} >> /dev/null
 # build MP in a private location for indexing
 pushd ${RBASE} >> /dev/null
 ./configure \
@@ -129,10 +128,17 @@ make install
 make distclean
 popd
 
+# generate platform-specific indexes
+pushd ${PORTS} >> /dev/null
+PIDS=()
 for PLATFORM in $PLATFORMS; do
-	$PORTINDEX -p macosx_${PLATFORM} -o PortIndex_darwin_${PLATFORM};
+    INDEX="PortIndex_darwin_${PLATFORM}"
+    ${PORTINDEX} -p macosx_${PLATFORM} -o ${INDEX} | ${SED} "s/^/Updating ${INDEX}: /" &
+    PIDS+=($!)
 done
-
+for PID in ${PIDS[*]}; do
+    wait ${PID}
+done
 popd
 
 if [ ! -d ${RSYNCROOT}/release/ports ]; then
