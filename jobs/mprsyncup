@@ -154,18 +154,20 @@ if [ ${RBASE_CHANGED} -eq 1 ]; then
     popd
 fi
 
-# generate platform-specific indexes
-pushd ${PORTS} >> /dev/null
-PIDS=()
-for PLATFORM in $PLATFORMS; do
-    INDEX="PortIndex_darwin_${PLATFORM}"
-    ${PORTINDEX} -p macosx_${PLATFORM} -o ${INDEX} | ${SED} "s/^/Updating ${INDEX}:"$'\t'"/" | expand -t 40,48,56,64,72,80 &
-    PIDS+=($!)
-done
-for PID in ${PIDS[*]}; do
-    wait ${PID}
-done
-popd
+if [ ${PORTS_CHANGED} -eq 1 ]; then
+    # generate platform-specific indexes
+    pushd ${PORTS} >> /dev/null
+    PIDS=()
+    for PLATFORM in $PLATFORMS; do
+        INDEX="PortIndex_darwin_${PLATFORM}"
+        ${PORTINDEX} -p macosx_${PLATFORM} -o ${INDEX} | ${SED} "s/^/Updating ${INDEX}:"$'\t'"/" | expand -t 40,48,56,64,72,80 &
+        PIDS+=($!)
+    done
+    for PID in ${PIDS[*]}; do
+        wait ${PID}
+    done
+    popd
+fi
 
 ${MKDIR} -p ${RSYNCROOT}/release/ports
 ${RSYNC} -aIC --delete ${PORTS}/ ${RSYNCROOT}/release/ports
