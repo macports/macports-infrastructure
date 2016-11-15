@@ -105,8 +105,12 @@ fi
 if [ -f ${RBASE}/.svn/lock ]; then
     ${SVN} cleanup ${RBASE}
 fi
+RBASE_CHANGED=1
 if [ -d ${RBASE}/.svn ]; then
+    RBASE_OLD_REV="$(${SVN} info ${RBASE} | ${SED} -n 's/^Last Changed Rev: //p')"
     ${SVN} -q switch ${RELEASE_URL} ${RBASE}
+    RBASE_NEW_REV="$(${SVN} info ${RBASE} | ${SED} -n 's/^Last Changed Rev: //p')"
+    [ "${RBASE_OLD_REV}" = "${RBASE_NEW_REV}" ] && RBASE_CHANGED=0
 else
     ${SVN} -q checkout ${RELEASE_URL} ${RBASE}
 fi
@@ -121,14 +125,19 @@ ${RSYNC} -aIC --delete ${RBASE}/ ${RSYNCROOT}/release/base
 if [ -f ${PORTS}/.svn/lock ]; then
     ${SVN} cleanup ${PORTS}
 fi
+PORTS_CHANGED=1
 if [ -d ${PORTS}/.svn ]; then
+    PORTS_OLD_REV="$(${SVN} info ${PORTS} | ${SED} -n 's/^Last Changed Rev: //p')"
     ${SVN} -q update ${PORTS}
+    PORTS_NEW_REV="$(${SVN} info ${PORTS} | ${SED} -n 's/^Last Changed Rev: //p')"
+    [ "${PORTS_OLD_REV}" = "${PORTS_NEW_REV}" ] && PORTS_CHANGED=0
 else
     ${SVN} -q checkout ${PORTSURL} ${PORTS}
 fi
 
-# build MP in a private location for indexing
-if [[ ! -x ${PREFIX}/bin/port || ! -r ${RBASE}/config/macports_version || "$(<${RBASE}/config/macports_version)" != "$(${PREFIX}/bin/port -q version)" ]]; then
+if [ ${RBASE_CHANGED} -eq 1 ]; then
+    PORTS_CHANGED=1
+    # build MP in a private location for indexing
     pushd ${RBASE} >> /dev/null
     ./configure \
         --prefix=${PREFIX} \
