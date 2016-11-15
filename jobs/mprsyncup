@@ -154,7 +154,7 @@ ${RSYNC} -aIC --delete ${PORTS}/ ${RSYNCROOT}/release/ports
 
 # symlink trunk ports to release ports since we only have 1 set of ports
 cd ${RSYNCROOT}
-if [ ! -h trunk/dports ]; then
+if [ ! -L trunk/dports ]; then
     cd trunk
     ${RM} -rf dports && ${LN} -s ../release/ports dports
 fi
