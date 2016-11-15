@@ -204,6 +204,9 @@ proc check_licenses {portName variantInfo verbose} {
         }
 
         set aPortInfo [infoForPort $aPort $variantInfo]
+        if {$aPortInfo eq {}} {
+            continue
+        }
         set aPortLicense [lindex $aPortInfo 1]
         set installs_libs [lindex $aPortInfo 2]
         if {!$installs_libs} {
