@@ -32,7 +32,7 @@ set -e
 set -x
 
 # Commands we need:
-SVN="/opt/local/bin/svn -q --non-interactive"
+SVN="/opt/local/bin/svn --non-interactive"
 CLEANUP="/opt/local/bin/svn --non-interactive cleanup"
 RSYNC="/opt/local/bin/rsync -q"
 RM="/bin/rm"
@@ -73,9 +73,9 @@ fi
 
 # Update/checkout trunk's base, export and rsync it to the rsync repos location (${RSYNCROOT}):
 if [ -d ${TBASE}/.svn ]; then
-    ${SVN} update ${TBASE}
+    ${SVN} -q update ${TBASE}
 else
-    ${SVN} checkout ${BASEURL} ${TBASE}
+    ${SVN} -q checkout ${BASEURL} ${TBASE}
 fi
 
 ${MKDIR} -p ${RSYNCROOT}/trunk/base
@@ -92,9 +92,9 @@ if [ -f ${RBASE}/.svn/lock ]; then
     ${CLEANUP} ${RBASE}
 fi
 if [ -d ${RBASE}/.svn ]; then
-    ${SVN} switch ${RELEASE_URL} ${RBASE}
+    ${SVN} -q switch ${RELEASE_URL} ${RBASE}
 else
-    ${SVN} checkout ${RELEASE_URL} ${RBASE}
+    ${SVN} -q checkout ${RELEASE_URL} ${RBASE}
 fi
 
 ${MKDIR} -p ${RSYNCROOT}/release/base
@@ -107,9 +107,9 @@ fi
 
 # Update/checkout the ports tree, export it and rsync it to ${RSYNCROOT}/release/ports:
 if [ -d ${PORTS}/.svn ]; then
-    ${SVN} update ${PORTS}
+    ${SVN} -q update ${PORTS}
 else
-    ${SVN} checkout ${PORTSURL} ${PORTS}
+    ${SVN} -q checkout ${PORTSURL} ${PORTS}
 fi
 
 # build MP in a private location for indexing
