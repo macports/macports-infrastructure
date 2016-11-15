@@ -65,12 +65,13 @@ RELEASE_URL_FILE=config/RELEASE_URL
 # XXX set real path
 PRIVKEY=""
 
-# cleanup up the working copy if it is locked
+#
+# Update trunk/base
+#
+
 if [ -f ${TBASE}/.svn/lock ]; then
     ${SVN} cleanup ${TBASE}
 fi
-
-# Update/checkout trunk's base, export and rsync it to the rsync repos location (${RSYNCROOT}):
 if [ -d ${TBASE}/.svn ]; then
     ${SVN} -q update ${TBASE}
 else
@@ -80,13 +81,15 @@ fi
 ${MKDIR} -p ${RSYNCROOT}/trunk/base
 ${RSYNC} -aIC --delete ${TBASE}/ ${RSYNCROOT}/trunk/base
 
-# Read what tag we're releasing from, switch to/checkout a copy, export and rsync it to ${RSYNCROOT}/release/base:
+#
+# Update release/base
+#
+
 read RELEASE_URL < ${TBASE}/${RELEASE_URL_FILE}
 if [ ! -n ${RELEASE_URL} ]; then
     echo "no RELEASE_URL specified in svn trunk, bailing out!"
     exit 1
 fi
-# cleanup up the working copy if it is locked
 if [ -f ${RBASE}/.svn/lock ]; then
     ${SVN} cleanup ${RBASE}
 fi
@@ -99,12 +102,13 @@ fi
 ${MKDIR} -p ${RSYNCROOT}/release/base
 ${RSYNC} -aIC --delete ${RBASE}/ ${RSYNCROOT}/release/base
 
-# clean up the working copy if it is locked
+#
+# Update release/ports
+#
+
 if [ -f ${PORTS}/.svn/lock ]; then
     ${SVN} cleanup ${PORTS}
 fi
-
-# Update/checkout the ports tree, export it and rsync it to ${RSYNCROOT}/release/ports:
 if [ -d ${PORTS}/.svn ]; then
     ${SVN} -q update ${PORTS}
 else
@@ -145,12 +149,19 @@ popd
 ${MKDIR} -p ${RSYNCROOT}/release/ports
 ${RSYNC} -aIC --delete ${PORTS}/ ${RSYNCROOT}/release/ports
 
-# symlink trunk ports to release ports since we only have 1 set of ports
+#
+# Update trunk/dports
+#
+
 cd ${RSYNCROOT}
 if [ ! -L trunk/dports ]; then
     cd trunk
     ${RM} -rf dports && ${LN} -s ../release/ports dports
 fi
+
+#
+# Update release/tarballs
+#
 
 # generate and sign tarballs of base and dports
 # the signature always needs to match, so we try to make this look atomic to
