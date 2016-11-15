@@ -66,6 +66,18 @@ RELEASE_URL_FILE=config/RELEASE_URL
 PRIVKEY=""
 
 #
+# Functions
+#
+
+sign() {
+    [ -z "${PRIVKEY}" ] && return
+    for FILE in "$@"; do
+        printf "Signing %s\n" "${FILE}"
+        ${OPENSSL} dgst -ripemd160 -sign "${PRIVKEY}" -out "${FILE}.rmd160" "${FILE}"
+    done
+}
+
+#
 # Update trunk/base
 #
 
@@ -174,11 +186,7 @@ ${LN} -sfh tarballs_old ${RSYNCROOT}/release/tarballs
 ${TAR} -C ${RSYNCROOT}/release/ -cf ${TAR_CURDIR}/base.tar base
 ${TAR} --exclude 'PortIndex*' -C ${RSYNCROOT}/release/ -cf ${TAR_CURDIR}/ports.tar ports
 cp -pR ${RSYNCROOT}/release/ports/PortIndex_* ${TAR_CURDIR}
-# XXX needs PRIVKEY to be set above
-#${OPENSSL} dgst -ripemd160 -sign ${PRIVKEY} -out ${TAR_CURDIR}/base.tar.rmd160 ${TAR_CURDIR}/base.tar
-#${OPENSSL} dgst -ripemd160 -sign ${PRIVKEY} -out ${TAR_CURDIR}/ports.tar.rmd160 ${TAR_CURDIR}/ports.tar
-for index in ${TAR_CURDIR}/PortIndex_*/PortIndex; do
-    #${OPENSSL} dgst -ripemd160 -sign ${PRIVKEY} -out ${index}.rmd160 ${index}
-done
+sign ${TAR_CURDIR}/base.tar
+sign ${TAR_CURDIR}/ports.tar ${TAR_CURDIR}/PortIndex_*/PortIndex
 ${LN} -sfh tarballs_current ${RSYNCROOT}/release/tarballs
 ${RM} -rf ${RSYNCROOT}/release/tarballs_old
