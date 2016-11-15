@@ -145,7 +145,7 @@ if [ ${RBASE_CHANGED} -eq 1 ]; then
         --with-install-user="$(id -un)"
     make clean
     JOBS=1
-    if [ "$(uname -s)" == "Darwin" ]; then
+    if [ "$(uname -s)" = "Darwin" ]; then
         JOBS="$(sysctl -n hw.activecpu)"
     fi
     make -j"$JOBS"
