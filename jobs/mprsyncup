@@ -33,7 +33,6 @@ set -x
 
 # Commands we need:
 SVN="/opt/local/bin/svn --non-interactive"
-CLEANUP="/opt/local/bin/svn --non-interactive cleanup"
 RSYNC="/opt/local/bin/rsync -q"
 RM="/bin/rm"
 MKDIR="/bin/mkdir"
@@ -68,7 +67,7 @@ PRIVKEY=""
 
 # cleanup up the working copy if it is locked
 if [ -f ${TBASE}/.svn/lock ]; then
-    ${CLEANUP} ${TBASE}
+    ${SVN} cleanup ${TBASE}
 fi
 
 # Update/checkout trunk's base, export and rsync it to the rsync repos location (${RSYNCROOT}):
@@ -89,7 +88,7 @@ if [ ! -n ${RELEASE_URL} ]; then
 fi
 # cleanup up the working copy if it is locked
 if [ -f ${RBASE}/.svn/lock ]; then
-    ${CLEANUP} ${RBASE}
+    ${SVN} cleanup ${RBASE}
 fi
 if [ -d ${RBASE}/.svn ]; then
     ${SVN} -q switch ${RELEASE_URL} ${RBASE}
@@ -102,7 +101,7 @@ ${RSYNC} -aIC --delete ${RBASE}/ ${RSYNCROOT}/release/base
 
 # clean up the working copy if it is locked
 if [ -f ${PORTS}/.svn/lock ]; then
-      ${CLEANUP} ${PORTS}
+    ${SVN} cleanup ${PORTS}
 fi
 
 # Update/checkout the ports tree, export it and rsync it to ${RSYNCROOT}/release/ports:
