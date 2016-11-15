@@ -100,10 +100,8 @@ array set license_conflicts \
     zpl-1 {agpl cecill gpl}"
 
 proc printUsage {} {
-    puts "Usage: $::argv0 \[-hvV\] \[-t macports-tcl-path\] port-name \[variants...\]"
+    puts "Usage: $::argv0 \[-hvV\] port-name \[variants...\]"
     puts "  -h    This help"
-    puts "  -t    Give a different location for the base MacPorts Tcl"
-    puts "        file (defaults to /Library/Tcl)"
     puts "  -v    verbose output"
     puts "  -V    show version and MacPorts version being used"
     puts ""
@@ -283,7 +281,6 @@ proc check_licenses {portName variantInfo verbose} {
 
 # Begin
 
-set macportsTclPath /Library/Tcl
 set verbose 0
 set showVersion 0
 
@@ -292,15 +289,6 @@ while {[string index [lindex $::argv 0] 0] eq "-"} {
         h {
             printUsage
             exit 0
-        }
-        t {
-            if {[llength $::argv] < 2} {
-                puts "-t needs a path"
-                printUsage
-                exit 2
-            }
-            set macportsTclPath [lindex $::argv 1]
-            set ::argv [lrange $::argv 1 end]
         }
         v {
              set verbose 1
