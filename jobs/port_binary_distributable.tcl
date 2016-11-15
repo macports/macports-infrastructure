@@ -163,7 +163,7 @@ proc check_licenses {portName variantInfo verbose} {
     global license_good license_conflicts
     array set portSeen {}
     set top_info [infoForPort $portName $variantInfo]
-    if {$top_info == {}} {
+    if {$top_info eq {}} {
         return 1
     }
     set top_license [lindex $top_info 1]
@@ -287,7 +287,7 @@ set macportsTclPath /Library/Tcl
 set verbose 0
 set showVersion 0
 
-while {[string index [lindex $::argv 0] 0] == "-" } {
+while {[string index [lindex $::argv 0] 0] eq "-"} {
     switch [string range [lindex $::argv 0] 1 end] {
         h {
             printUsage
