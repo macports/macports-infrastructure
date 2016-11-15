@@ -78,9 +78,7 @@ else
     ${SVN} checkout ${BASEURL} ${TBASE}
 fi
 
-if [ ! -d ${RSYNCROOT}/trunk/base ]; then
-    ${MKDIR} -p ${RSYNCROOT}/trunk
-fi
+${MKDIR} -p ${RSYNCROOT}/trunk/base
 ${RSYNC} -aIC --delete ${TBASE}/ ${RSYNCROOT}/trunk/base
 
 # Read what tag we're releasing from, switch to/checkout a copy, export and rsync it to ${RSYNCROOT}/release/base:
@@ -99,9 +97,7 @@ else
     ${SVN} checkout ${RELEASE_URL} ${RBASE}
 fi
 
-if [ ! -d ${RSYNCROOT}/release/base ]; then
-    ${MKDIR} -p ${RSYNCROOT}/release/base
-fi
+${MKDIR} -p ${RSYNCROOT}/release/base
 ${RSYNC} -aIC --delete ${RBASE}/ ${RSYNCROOT}/release/base
 
 # clean up the working copy if it is locked
@@ -147,9 +143,7 @@ for PID in ${PIDS[*]}; do
 done
 popd
 
-if [ ! -d ${RSYNCROOT}/release/ports ]; then
-    ${MKDIR} -p ${RSYNCROOT}/release/ports
-fi
+${MKDIR} -p ${RSYNCROOT}/release/ports
 ${RSYNC} -aIC --delete ${PORTS}/ ${RSYNCROOT}/release/ports
 
 # symlink trunk ports to release ports since we only have 1 set of ports
