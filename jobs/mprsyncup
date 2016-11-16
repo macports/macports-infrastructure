@@ -30,7 +30,9 @@
 set -e
 set -x
 
-# Commands we need:
+# Commands we need. For options to be substituted correctly, these must
+# not be substituted within double quotes. Thus, there must not be any
+# globbing characters, and the command itself must not contain spaces.
 SVN="/opt/local/bin/svn --non-interactive"
 RSYNC="/opt/local/bin/rsync -q"
 RM="/bin/rm"
@@ -54,7 +56,8 @@ PORTINDEX=${PREFIX}/bin/portindex
 
 PATH=${PREFIX}/bin:/bin:/usr/bin:/usr/sbin:/opt/local/bin
 
-# platforms we generate indexes for
+# Platforms we generate indexes for. This is intentionally split on
+# whitespace later.
 PLATFORMS="8_powerpc 8_i386 9_powerpc 9_i386 10_i386 11_i386 12_i386 13_i386 14_i386 15_i386 16_i386"
 
 # Sources information:
@@ -92,66 +95,66 @@ sign() {
 # Update trunk/base
 #
 
-if [ -f ${TBASE}/.svn/lock ]; then
-    ${SVN} cleanup ${TBASE}
+if [ -f "${TBASE}/.svn/lock" ]; then
+    ${SVN} cleanup "${TBASE}"
 fi
-if [ -d ${TBASE}/.svn ]; then
-    ${SVN} -q update ${TBASE}
+if [ -d "${TBASE}/.svn" ]; then
+    ${SVN} -q update "${TBASE}"
 else
-    ${SVN} -q checkout ${BASEURL} ${TBASE}
+    ${SVN} -q checkout "${BASEURL}" "${TBASE}"
 fi
 
-${MKDIR} -p ${RSYNCROOT}/trunk/base
-${RSYNC} -aIC --delete ${TBASE}/ ${RSYNCROOT}/trunk/base
+${MKDIR} -p "${RSYNCROOT}/trunk/base"
+${RSYNC} -aIC --delete "${TBASE}/" "${RSYNCROOT}/trunk/base"
 
 #
 # Update release/base
 #
 
-read RELEASE_URL < ${TBASE}/${RELEASE_URL_FILE}
-if [ ! -n ${RELEASE_URL} ]; then
+read RELEASE_URL < "${TBASE}/${RELEASE_URL_FILE}"
+if [ ! -n "${RELEASE_URL}" ]; then
     echo "no RELEASE_URL specified in svn trunk, bailing out!"
     exit 1
 fi
-if [ -f ${RBASE}/.svn/lock ]; then
-    ${SVN} cleanup ${RBASE}
+if [ -f "${RBASE}/.svn/lock" ]; then
+    ${SVN} cleanup "${RBASE}"
 fi
 RBASE_CHANGED=1
-if [ -d ${RBASE}/.svn ]; then
-    RBASE_OLD_REV="$(${SVN} info ${RBASE} | ${SED} -n 's/^Last Changed Rev: //p')"
-    ${SVN} -q switch ${RELEASE_URL} ${RBASE}
-    RBASE_NEW_REV="$(${SVN} info ${RBASE} | ${SED} -n 's/^Last Changed Rev: //p')"
+if [ -d "${RBASE}/.svn" ]; then
+    RBASE_OLD_REV="$(${SVN} info "${RBASE}" | ${SED} -n 's/^Last Changed Rev: //p')"
+    ${SVN} -q switch "${RELEASE_URL}" "${RBASE}"
+    RBASE_NEW_REV="$(${SVN} info "${RBASE}" | ${SED} -n 's/^Last Changed Rev: //p')"
     [ "${RBASE_OLD_REV}" = "${RBASE_NEW_REV}" ] && RBASE_CHANGED=0
 else
-    ${SVN} -q checkout ${RELEASE_URL} ${RBASE}
+    ${SVN} -q checkout "${RELEASE_URL}" "${RBASE}"
 fi
 
-${MKDIR} -p ${RSYNCROOT}/release/base
-${RSYNC} -aIC --delete ${RBASE}/ ${RSYNCROOT}/release/base
+${MKDIR} -p "${RSYNCROOT}/release/base"
+${RSYNC} -aIC --delete "${RBASE}/" "${RSYNCROOT}/release/base"
 
 #
 # Update release/ports
 #
 
-if [ -f ${PORTS}/.svn/lock ]; then
-    ${SVN} cleanup ${PORTS}
+if [ -f "${PORTS}/.svn/lock" ]; then
+    ${SVN} cleanup "${PORTS}"
 fi
 PORTS_CHANGED=1
-if [ -d ${PORTS}/.svn ]; then
-    PORTS_OLD_REV="$(${SVN} info ${PORTS} | ${SED} -n 's/^Last Changed Rev: //p')"
-    ${SVN} -q update ${PORTS}
-    PORTS_NEW_REV="$(${SVN} info ${PORTS} | ${SED} -n 's/^Last Changed Rev: //p')"
+if [ -d "${PORTS}/.svn" ]; then
+    PORTS_OLD_REV="$(${SVN} info "${PORTS}" | ${SED} -n 's/^Last Changed Rev: //p')"
+    ${SVN} -q update "${PORTS}"
+    PORTS_NEW_REV="$(${SVN} info "${PORTS}" | ${SED} -n 's/^Last Changed Rev: //p')"
     [ "${PORTS_OLD_REV}" = "${PORTS_NEW_REV}" ] && PORTS_CHANGED=0
 else
-    ${SVN} -q checkout ${PORTSURL} ${PORTS}
+    ${SVN} -q checkout "${PORTSURL}" "${PORTS}"
 fi
 
-if [ ${RBASE_CHANGED} -eq 1 ]; then
+if [ "${RBASE_CHANGED}" -eq 1 ]; then
     PORTS_CHANGED=1
     # build MP in a private location for indexing
-    pushd ${RBASE} >> /dev/null
+    pushd "${RBASE}" >> /dev/null
     ./configure \
-        --prefix=${PREFIX} \
+        --prefix="${PREFIX}" \
         --with-install-group="$(id -gn)" \
         --with-install-user="$(id -un)"
     make clean
@@ -165,13 +168,14 @@ if [ ${RBASE_CHANGED} -eq 1 ]; then
     popd
 fi
 
-if [ ${PORTS_CHANGED} -eq 1 ]; then
+if [ "${PORTS_CHANGED}" -eq 1 ]; then
     # generate platform-specific indexes
-    pushd ${PORTS} >> /dev/null
+    pushd "${PORTS}" >> /dev/null
     PIDS=()
+    # Intentionally split PLATFORMS on whitespace.
     for PLATFORM in $PLATFORMS; do
         INDEX="PortIndex_darwin_${PLATFORM}"
-        ${PORTINDEX} -p macosx_${PLATFORM} -o ${INDEX} | ${SED} "s/^/Updating ${INDEX}:"$'\t'"/" | expand -t 40,48,56,64,72,80 &
+        ${PORTINDEX} -p "macosx_${PLATFORM}" -o "${INDEX}" | ${SED} "s/^/Updating ${INDEX}:"$'\t'"/" | expand -t 40,48,56,64,72,80 &
         PIDS+=($!)
     done
     for PID in ${PIDS[*]}; do
@@ -180,14 +184,14 @@ if [ ${PORTS_CHANGED} -eq 1 ]; then
     popd
 fi
 
-${MKDIR} -p ${RSYNCROOT}/release/ports
-${RSYNC} -aIC --delete ${PORTS}/ ${RSYNCROOT}/release/ports
+${MKDIR} -p "${RSYNCROOT}/release/ports"
+${RSYNC} -aIC --delete "${PORTS}/" "${RSYNCROOT}/release/ports"
 
 #
 # Update trunk/dports
 #
 
-cd ${RSYNCROOT}
+cd "${RSYNCROOT}"
 if [ ! -L trunk/dports ]; then
     cd trunk
     ${RM} -rf dports && ${LN} -s ../release/ports dports
@@ -198,11 +202,11 @@ fi
 #
 
 # Generate and sign tarballs of base and ports and the PortIndex files.
-if [ ${RBASE_CHANGED} -eq 1 ]; then
+if [ "${RBASE_CHANGED}" -eq 1 ]; then
     ${TAR} -C "${RSYNCROOT}"/release/ -cf "${ROOT}"/base.tar base
     sign "${ROOT}"/base.tar
 fi
-if [ ${PORTS_CHANGED} -eq 1 ]; then
+if [ "${PORTS_CHANGED}" -eq 1 ]; then
     ${TAR} -C "${RSYNCROOT}"/release/ -czf "${ROOT}"/ports.tar.gz ports
 
     ${TAR} --exclude 'PortIndex*' -C "${RSYNCROOT}"/release/ -cf "${ROOT}"/ports.tar ports
@@ -222,15 +226,15 @@ fi
 # Replace files on rsync server as quickly as possible.
 # This is not atomic but doing it atomically is difficult.
 ${MKDIR} -p "${RSYNCROOT}"/release/tarballs "${RSYNCROOT}"/distfiles
-if [ ${RBASE_CHANGED} -eq 1 ]; then
+if [ "${RBASE_CHANGED}" -eq 1 ]; then
     ${MV} "${ROOT}"/base.tar* "${RSYNCROOT}"/release/tarballs
 fi
-if [ ${PORTS_CHANGED} -eq 1 ]; then
+if [ "${PORTS_CHANGED}" -eq 1 ]; then
     ${MV} "${ROOT}"/ports.tar.gz "${RSYNCROOT}"/release
     hardlink "${RSYNCROOT}"/release/ports.tar.gz "${RSYNCROOT}"/distfiles/ports.tar.gz
     ${MV} "${ROOT}"/ports.tar* "${RSYNCROOT}"/release/tarballs
     for INDEX_DIR in "${RSYNCROOT}"/release/ports/PortIndex_*; do
-        INDEX_LINK_DIR="${RSYNCROOT}"/release/tarballs/${INDEX_DIR##*/}
+        INDEX_LINK_DIR="${RSYNCROOT}/release/tarballs/${INDEX_DIR##*/}"
         ${MKDIR} -p "${INDEX_LINK_DIR}"
         hardlink "${INDEX_DIR}"/PortIndex "${INDEX_LINK_DIR}"/PortIndex
         hardlink "${INDEX_DIR}"/PortIndex.quick "${INDEX_LINK_DIR}"/PortIndex.quick
