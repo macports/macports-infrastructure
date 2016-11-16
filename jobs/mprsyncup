@@ -36,10 +36,12 @@ SVN="/opt/local/bin/svn --non-interactive"
 RSYNC="/opt/local/bin/rsync -q"
 RM="/bin/rm"
 MKDIR="/bin/mkdir"
+MV="/opt/local/bin/gmv"
 LN="/bin/ln"
 TAR="/usr/bin/tar"
 OPENSSL="/usr/bin/openssl"
 SED="/usr/bin/sed"
+STAT="/opt/local/bin/gstat"
 
 # Paths we'll work on:
 ROOT=/var/tmp/macports
@@ -68,6 +70,16 @@ PRIVKEY=""
 #
 # Functions
 #
+
+hardlink() {
+    SOURCE="$1"
+    TARGET="$2"
+    [ -f "${SOURCE}" ] && [ -f "${TARGET}" ] && [ "$(${STAT} -c %i "${SOURCE}")" = "$(${STAT} -c %i "${TARGET}")" ] && return
+    printf "Hard linking %s to %s\n" "${SOURCE}" "${TARGET}"
+    TMPTARGET="${ROOT}"/"${TARGET##*/}".$$
+    ${LN} "${SOURCE}" "${TMPTARGET}"
+    ${MV} "${TMPTARGET}" "${TARGET}"
+}
 
 sign() {
     [ -z "${PRIVKEY}" ] && return
@@ -186,18 +198,44 @@ fi
 # Update release/tarballs
 #
 
-# generate and sign tarballs of base and dports
-# the signature always needs to match, so we try to make this look atomic to
-# clients by switching a symlink target
+# Generate and sign tarballs of base and ports and the PortIndex files.
+if [ ${RBASE_CHANGED} -eq 1 ]; then
+    ${TAR} -C "${RSYNCROOT}"/release/ -cf "${ROOT}"/base.tar base
+    sign "${ROOT}"/base.tar
+fi
+if [ ${PORTS_CHANGED} -eq 1 ]; then
+    ${TAR} -C "${RSYNCROOT}"/release/ -czf "${ROOT}"/ports.tar.gz ports
 
-TAR_CURDIR=${RSYNCROOT}/release/tarballs_current
-${MKDIR} -p ${TAR_CURDIR}
-cp -pR ${TAR_CURDIR} ${RSYNCROOT}/release/tarballs_old
-${LN} -sfh tarballs_old ${RSYNCROOT}/release/tarballs
-${TAR} -C ${RSYNCROOT}/release/ -cf ${TAR_CURDIR}/base.tar base
-${TAR} --exclude 'PortIndex*' -C ${RSYNCROOT}/release/ -cf ${TAR_CURDIR}/ports.tar ports
-cp -pR ${RSYNCROOT}/release/ports/PortIndex_* ${TAR_CURDIR}
-sign ${TAR_CURDIR}/base.tar
-sign ${TAR_CURDIR}/ports.tar ${TAR_CURDIR}/PortIndex_*/PortIndex
-${LN} -sfh tarballs_current ${RSYNCROOT}/release/tarballs
-${RM} -rf ${RSYNCROOT}/release/tarballs_old
+    ${TAR} --exclude 'PortIndex*' -C "${RSYNCROOT}"/release/ -cf "${ROOT}"/ports.tar ports
+    for INDEX_DIR in "${RSYNCROOT}"/release/ports/PortIndex_*; do
+        INDEX_LINK_DIR="${ROOT}"/"${INDEX_DIR##*/}"
+        ${MKDIR} -p "${INDEX_LINK_DIR}"
+        hardlink "${INDEX_DIR}"/PortIndex "${INDEX_LINK_DIR}"/PortIndex
+    done
+    sign "${ROOT}"/ports.tar "${ROOT}"/PortIndex_*/PortIndex
+fi
+
+# Tarballs used to be a symlink to the real directory tarballs_current.
+# Clean up this situation if found. This should only happen once.
+[ -L "${RSYNCROOT}"/release/tarballs ] && ${RM} -f "${RSYNCROOT}"/release/tarballs
+[ -d "${RSYNCROOT}"/release/tarballs_current ] && ${MV} "${RSYNCROOT}"/release/tarballs_current "${RSYNCROOT}"/release/tarballs
+
+# Replace files on rsync server as quickly as possible.
+# This is not atomic but doing it atomically is difficult.
+${MKDIR} -p "${RSYNCROOT}"/release/tarballs "${RSYNCROOT}"/distfiles
+if [ ${RBASE_CHANGED} -eq 1 ]; then
+    ${MV} "${ROOT}"/base.tar* "${RSYNCROOT}"/release/tarballs
+fi
+if [ ${PORTS_CHANGED} -eq 1 ]; then
+    ${MV} "${ROOT}"/ports.tar.gz "${RSYNCROOT}"/release
+    hardlink "${RSYNCROOT}"/release/ports.tar.gz "${RSYNCROOT}"/distfiles/ports.tar.gz
+    ${MV} "${ROOT}"/ports.tar* "${RSYNCROOT}"/release/tarballs
+    for INDEX_DIR in "${RSYNCROOT}"/release/ports/PortIndex_*; do
+        INDEX_LINK_DIR="${RSYNCROOT}"/release/tarballs/${INDEX_DIR##*/}
+        ${MKDIR} -p "${INDEX_LINK_DIR}"
+        hardlink "${INDEX_DIR}"/PortIndex "${INDEX_LINK_DIR}"/PortIndex
+        hardlink "${INDEX_DIR}"/PortIndex.quick "${INDEX_LINK_DIR}"/PortIndex.quick
+        hardlink "${ROOT}"/"${INDEX_DIR##*/}"/PortIndex.rmd160 "${INDEX_LINK_DIR}"/PortIndex.rmd160
+    done
+    ${RM} -rf "${ROOT}"/PortIndex_*
+fi
