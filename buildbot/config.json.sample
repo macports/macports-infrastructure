@@ -17,7 +17,6 @@
             "user": "",
             "sshkeyfile": "",
             "sshknownhostsfile": "ssh_known_hosts",
-            "destpath": ""
         },
         "guide": {
             "host": "",
