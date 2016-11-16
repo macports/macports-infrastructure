@@ -41,6 +41,7 @@ MV="/opt/local/bin/gmv"
 LN="/bin/ln"
 TAR="/usr/bin/tar"
 OPENSSL="/usr/bin/openssl"
+AWK="/usr/bin/awk"
 SED="/usr/bin/sed"
 STAT="/opt/local/bin/gstat"
 
@@ -175,7 +176,7 @@ if [ "${PORTS_CHANGED}" -eq 1 ]; then
     # Intentionally split PLATFORMS on whitespace.
     for PLATFORM in $PLATFORMS; do
         INDEX="PortIndex_darwin_${PLATFORM}"
-        ${PORTINDEX} -p "macosx_${PLATFORM}" -o "${INDEX}" | ${SED} "s/^/Updating ${INDEX}:"$'\t'"/" | expand -t 40,48,56,64,72,80 &
+        ${PORTINDEX} -p "macosx_${PLATFORM}" -o "${INDEX}" | ${AWK} '{ print "Updating " idx ":\t" $0 }' idx="$INDEX" | expand -t 40,48,56,64,72,80 &
         PIDS+=($!)
     done
     for PID in ${PIDS[*]}; do
