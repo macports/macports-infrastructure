@@ -174,18 +174,14 @@ if [ "${PORTS_CHANGED}" -eq 1 ]; then
     (
         # generate platform-specific indexes
         cd "${PORTS}"
-        PIDS=()
         # Intentionally split PLATFORMS on whitespace.
         for PLATFORM in $PLATFORMS; do
             INDEX="PortIndex_darwin_${PLATFORM}"
             ${PORTINDEX} -p "macosx_${PLATFORM}" -o "${INDEX}" \
                 | ${AWK} '{ print "Updating " idx ":\t" $0 }' idx="$INDEX" \
                 | expand -t 40,48,56,64,72,80 &
-            PIDS+=($!)
         done
-        for PID in ${PIDS[*]}; do
-            wait ${PID}
-        done
+        wait
     )
 fi
 
