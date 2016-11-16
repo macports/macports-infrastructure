@@ -111,7 +111,7 @@ ${RSYNC} -aIC --delete "${TBASE}/" "${RSYNCROOT}/trunk/base"
 # Update release/base
 #
 
-read RELEASE_URL < "${TBASE}/${RELEASE_URL_FILE}"
+read -r RELEASE_URL < "${TBASE}/${RELEASE_URL_FILE}"
 if [ ! -n "${RELEASE_URL}" ]; then
     echo "no RELEASE_URL specified in svn trunk, bailing out!"
     exit 1
