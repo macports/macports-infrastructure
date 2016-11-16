@@ -152,37 +152,41 @@ fi
 
 if [ "${RBASE_CHANGED}" -eq 1 ]; then
     PORTS_CHANGED=1
-    # build MP in a private location for indexing
-    pushd "${RBASE}" >> /dev/null
-    ./configure \
-        --prefix="${PREFIX}" \
-        --with-install-group="$(id -gn)" \
-        --with-install-user="$(id -un)"
-    make clean
-    JOBS=1
-    if [ "$(uname -s)" = "Darwin" ]; then
-        JOBS="$(sysctl -n hw.activecpu)"
-    fi
-    make -j"$JOBS"
-    make install
-    make distclean
-    popd
+    (
+        # build MP in a private location for indexing
+        cd "${RBASE}"
+        ./configure \
+            --prefix="${PREFIX}" \
+            --with-install-group="$(id -gn)" \
+            --with-install-user="$(id -un)"
+        make clean
+        JOBS=1
+        if [ "$(uname -s)" = "Darwin" ]; then
+            JOBS="$(sysctl -n hw.activecpu)"
+        fi
+        make -j"$JOBS"
+        make install
+        make distclean
+    )
 fi
 
 if [ "${PORTS_CHANGED}" -eq 1 ]; then
-    # generate platform-specific indexes
-    pushd "${PORTS}" >> /dev/null
-    PIDS=()
-    # Intentionally split PLATFORMS on whitespace.
-    for PLATFORM in $PLATFORMS; do
-        INDEX="PortIndex_darwin_${PLATFORM}"
-        ${PORTINDEX} -p "macosx_${PLATFORM}" -o "${INDEX}" | ${AWK} '{ print "Updating " idx ":\t" $0 }' idx="$INDEX" | expand -t 40,48,56,64,72,80 &
-        PIDS+=($!)
-    done
-    for PID in ${PIDS[*]}; do
-        wait ${PID}
-    done
-    popd
+    (
+        # generate platform-specific indexes
+        cd "${PORTS}"
+        PIDS=()
+        # Intentionally split PLATFORMS on whitespace.
+        for PLATFORM in $PLATFORMS; do
+            INDEX="PortIndex_darwin_${PLATFORM}"
+            ${PORTINDEX} -p "macosx_${PLATFORM}" -o "${INDEX}" \
+                | ${AWK} '{ print "Updating " idx ":\t" $0 }' idx="$INDEX" \
+                | expand -t 40,48,56,64,72,80 &
+            PIDS+=($!)
+        done
+        for PID in ${PIDS[*]}; do
+            wait ${PID}
+        done
+    )
 fi
 
 ${MKDIR} -p "${RSYNCROOT}/release/ports"
