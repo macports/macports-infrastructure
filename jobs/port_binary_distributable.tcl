@@ -123,7 +123,8 @@ proc infoForPort {portName variantInfo} {
     set mport [mportopen $portInfo(porturl) [list subport $portName] $variantInfo]
     array unset portInfo
     array set portInfo [mportinfo $mport]
-    mportclose $mport
+    # Closing the mport is actually fairly expensive and not really necessary
+    #mportclose $mport
 
     foreach dependencyType $check_deptypes {
         if {[info exists portInfo($dependencyType)] && $portInfo($dependencyType) ne ""} {
