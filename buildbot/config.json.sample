@@ -24,6 +24,13 @@
             "sshkeyfile": "",
             "sshknownhostsfile": "ssh_known_hosts",
             "destpath": ""
+        },
+        "man": {
+            "host": "",
+            "user": "",
+            "sshkeyfile": "",
+            "sshknownhostsfile": "ssh_known_hosts",
+            "destpath": ""
         }
     }
 }
