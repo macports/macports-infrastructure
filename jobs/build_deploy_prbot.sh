@@ -34,7 +34,7 @@ PRBOT_CURRENT=$GOPATH/bin/prbot-current
 PRBOT_NEXT=$GOPATH/bin/prbot-next
 
 # Set up GOPATH, fetch or update source
-mkdir -p "$GOPATH/src/github.com/mapcorts"
+mkdir -p "$GOPATH/src/github.com/macports"
 if [ -d "$MPBOT_GITHUB_SRC" ]; then
 	git -C "$MPBOT_GITHUB_SRC" fetch --quiet || true # Ignore network problems assuming they are temporary
 	git -C "$MPBOT_GITHUB_SRC" reset --quiet --hard origin/master
