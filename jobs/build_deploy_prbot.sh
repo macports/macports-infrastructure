@@ -1,5 +1,19 @@
 #!/usr/bin/env bash
 
+##
+# This script downloads and builds the pull request handling bot developed by
+# l2dy in Google Summer of Code 2017. It will
+#
+# 1. clone the git repository if it does not exist yet and update it to the
+#    latest version if it exists already
+# 2. check whether an update is available, and if there is one
+# 3. download and update the necessary go dependencies
+# 4. build the pull request bot
+# 5. update a symlink that will always point to the latest version
+#
+# To use this script, set $GOPATH in your environment to the absolute path of
+# the go workspace you want to use.
+
 set -euo pipefail
 
 if [ -z "${GOPATH:-}" ]; then
