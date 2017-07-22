@@ -13,6 +13,10 @@
 #
 # To use this script, set $GOPATH in your environment to the absolute path of
 # the go workspace you want to use.
+#
+# Additionally, you can set the $GO variable to the path of the go utility.
+# This may be helpful if you are trying to use a different version of Go than
+# the one that comes with your operating system.
 
 set -euo pipefail
 
@@ -20,6 +24,9 @@ if [ -z "${GOPATH:-}" ]; then
 	printf >&2 "You must set \$GOPATH to the go workspace you want to use before calling this script.\n"
 	exit 1
 fi
+
+# Allow overriding the path to the go executable
+GO=${GO:-go}
 
 MPBOT_PACKAGE_NAME=github.com/macports/mpbot-github
 MPBOT_GITHUB_SRC=$GOPATH/src/$MPBOT_PACKAGE_NAME
@@ -53,9 +60,9 @@ if [ "$HEADREV" = "$CURRENTREV" ]; then
 fi
 
 # Get dependencies
-go get -u "$MPBOT_PACKAGE_NAME/pr/prbot"
+"$GO" get -u "$MPBOT_PACKAGE_NAME/pr/prbot"
 # Install
-go install "$MPBOT_PACKAGE_NAME/pr/prbot"
+"$GO" install "$MPBOT_PACKAGE_NAME/pr/prbot"
 
 # Update symlink
 mv "$GOPATH/bin/prbot" "$GOPATH/bin/prbot-$HEADREV"
