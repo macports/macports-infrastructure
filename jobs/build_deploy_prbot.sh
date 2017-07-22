@@ -69,3 +69,9 @@ mv "$GOPATH/bin/prbot" "$GOPATH/bin/prbot-$HEADREV"
 rm -f "$PRBOT_NEXT"
 ln -s "prbot-$HEADREV" "$PRBOT_NEXT"
 mv -f "$PRBOT_NEXT" "$PRBOT_CURRENT"
+
+# Killing currently running service to force systemd to restart it
+pkill prbot-current || true
+
+printf "Updated from %s to %s\n" "$CURRENTREV" "$HEADREV"
+exit 0
