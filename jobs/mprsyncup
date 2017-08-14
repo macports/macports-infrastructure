@@ -1,8 +1,8 @@
 #!/bin/sh
 ####
-# Script to checkout/update base sources from both trunk (ToT) and the current
+# Script to checkout/update base sources from both master and the current
 # release tag (as determined by the base/config/RELEASE_URL file) and a ports
-# tree from trunk (ToT), and then export and sync all of them to the
+# tree from master, and then export and sync all of them to the
 # ${RSYNCROOT} location, wherefrom the rsync modules are fed to the `sync'
 # and `selfupdate' routines in port(1). Read the base/portmgr/rsync.repos
 # file for more information on both the necessary rsync modules and filesystem
@@ -33,7 +33,7 @@ set -x
 # Commands we need. For options to be substituted correctly, these must
 # not be substituted within double quotes. Thus, there must not be any
 # globbing characters, and the command itself must not contain spaces.
-SVN="/opt/local/bin/svn --non-interactive"
+GIT="/opt/local/bin/git"
 RSYNC="/opt/local/bin/rsync -q"
 RM="/bin/rm"
 MKDIR="/bin/mkdir"
@@ -42,16 +42,16 @@ LN="/bin/ln"
 TAR="/usr/bin/tar"
 OPENSSL="/usr/bin/openssl"
 AWK="/usr/bin/awk"
-SED="/usr/bin/sed"
 STAT="/opt/local/bin/gstat"
+BASENAME="/usr/bin/basename"
 
 # Paths we'll work on:
 ROOT=/var/tmp/macports
 PREFIX=${ROOT}/opt/local
-SVNROOT=/var/tmp/macports
-TBASE=${SVNROOT}/trunk/base
-RBASE=${SVNROOT}/release/base
-PORTS=${SVNROOT}/release/ports
+GITROOT=/var/tmp/macports
+TBASE=${GITROOT}/trunk/base
+RBASE=${GITROOT}/release/base
+PORTS=${GITROOT}/release/ports
 RSYNCROOT=/rsync/macports
 PORTINDEX=${PREFIX}/bin/portindex
 
@@ -62,8 +62,8 @@ PATH=${PREFIX}/bin:/bin:/usr/bin:/usr/sbin:/opt/local/bin
 PLATFORMS="8_powerpc 8_i386 9_powerpc 9_i386 10_i386 11_i386 12_i386 13_i386 14_i386 15_i386 16_i386"
 
 # Sources information:
-BASEURL=https://github.com/macports/macports-base.git/trunk
-PORTSURL=https://github.com/macports/macports-ports.git/trunk
+BASEURL=https://github.com/macports/macports-base.git
+PORTSURL=https://github.com/macports/macports-ports.git
 RELEASE_URL_FILE=config/RELEASE_URL
 
 # private key to use for signing
@@ -96,13 +96,10 @@ sign() {
 # Update trunk/base
 #
 
-if [ -f "${TBASE}/.svn/lock" ]; then
-    ${SVN} cleanup "${TBASE}"
-fi
-if [ -d "${TBASE}/.svn" ]; then
-    ${SVN} -q update "${TBASE}"
+if [ -d "${TBASE}/.git" ]; then
+    cd "${TBASE}" && ${GIT} pull -q
 else
-    ${SVN} -q checkout "${BASEURL}" "${TBASE}"
+    ${GIT} clone -q "${BASEURL}" "${TBASE}"
 fi
 
 ${MKDIR} -p "${RSYNCROOT}/trunk/base"
@@ -114,20 +111,22 @@ ${RSYNC} -aIC --delete "${TBASE}/" "${RSYNCROOT}/trunk/base"
 
 read -r RELEASE_URL < "${TBASE}/${RELEASE_URL_FILE}"
 if [ -z "${RELEASE_URL}" ]; then
-    echo "no RELEASE_URL specified in svn trunk, bailing out!"
+    echo "no RELEASE_URL specified in git master, bailing out!"
     exit 1
 fi
-if [ -f "${RBASE}/.svn/lock" ]; then
-    ${SVN} cleanup "${RBASE}"
-fi
+
 RBASE_CHANGED=1
-if [ -d "${RBASE}/.svn" ]; then
-    RBASE_OLD_REV="$(${SVN} info "${RBASE}" | ${SED} -n 's/^Last Changed Rev: //p')"
-    ${SVN} -q switch "${RELEASE_URL}" "${RBASE}"
-    RBASE_NEW_REV="$(${SVN} info "${RBASE}" | ${SED} -n 's/^Last Changed Rev: //p')"
+if [ -d "${RBASE}/.git" ]; then
+    cd "${RBASE}"
+    ${GIT} fetch -q
+    RBASE_OLD_REV="$(${GIT} rev-parse HEAD)"
+    ${GIT} checkout -q "$(${BASENAME} ${RELEASE_URL})"
+    RBASE_NEW_REV="$(${GIT} rev-parse HEAD)"
     [ "${RBASE_OLD_REV}" = "${RBASE_NEW_REV}" ] && RBASE_CHANGED=0
 else
-    ${SVN} -q checkout "${RELEASE_URL}" "${RBASE}"
+    ${GIT} clone -q "${TBASE}" "${RBASE}"
+    cd "${RBASE}"
+    ${GIT} checkout -q "$(${BASENAME} ${RELEASE_URL})"
 fi
 
 ${MKDIR} -p "${RSYNCROOT}/release/base"
@@ -137,17 +136,15 @@ ${RSYNC} -aIC --delete "${RBASE}/" "${RSYNCROOT}/release/base"
 # Update release/ports
 #
 
-if [ -f "${PORTS}/.svn/lock" ]; then
-    ${SVN} cleanup "${PORTS}"
-fi
 PORTS_CHANGED=1
-if [ -d "${PORTS}/.svn" ]; then
-    PORTS_OLD_REV="$(${SVN} info "${PORTS}" | ${SED} -n 's/^Last Changed Rev: //p')"
-    ${SVN} -q update "${PORTS}"
-    PORTS_NEW_REV="$(${SVN} info "${PORTS}" | ${SED} -n 's/^Last Changed Rev: //p')"
+if [ -d "${PORTS}/.git" ]; then
+    cd "${PORTS}"
+    PORTS_OLD_REV="$(${GIT} rev-parse HEAD)"
+    ${GIT} pull -q
+    PORTS_NEW_REV="$(${GIT} rev-parse HEAD)"
     [ "${PORTS_OLD_REV}" = "${PORTS_NEW_REV}" ] && PORTS_CHANGED=0
 else
-    ${SVN} -q checkout "${PORTSURL}" "${PORTS}"
+    ${GIT} clone -q --depth 1 "${PORTSURL}" "${PORTS}"
 fi
 
 if [ "${RBASE_CHANGED}" -eq 1 ]; then
