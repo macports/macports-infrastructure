@@ -97,7 +97,7 @@ sign() {
 #
 
 if [ -d "${TBASE}/.git" ]; then
-    cd "${TBASE}" && ${GIT} pull -q
+    ${GIT} -C "${TBASE}" pull -q
 else
     ${GIT} clone -q "${BASEURL}" "${TBASE}"
 fi
@@ -125,8 +125,7 @@ if [ -d "${RBASE}/.git" ]; then
     [ "${RBASE_OLD_REV}" = "${RBASE_NEW_REV}" ] && RBASE_CHANGED=0
 else
     ${GIT} clone -q "${TBASE}" "${RBASE}"
-    cd "${RBASE}"
-    ${GIT} checkout -q "$(${BASENAME} ${RELEASE_URL})"
+    ${GIT} -C "${RBASE}" checkout -q "$(${BASENAME} ${RELEASE_URL})"
 fi
 
 ${MKDIR} -p "${RSYNCROOT}/release/base"
