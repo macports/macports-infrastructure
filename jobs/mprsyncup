@@ -118,7 +118,7 @@ fi
 RBASE_CHANGED=1
 if [ -d "${RBASE}/.git" ]; then
     cd "${RBASE}"
-    ${GIT} fetch -q
+    ${GIT} fetch -q --tags
     RBASE_OLD_REV="$(${GIT} rev-parse HEAD)"
     ${GIT} checkout -q "$(${BASENAME} ${RELEASE_URL})"
     RBASE_NEW_REV="$(${GIT} rev-parse HEAD)"
