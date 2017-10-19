@@ -1,0 +1,11 @@
+Metadata-Version: 1.0
+Name: maxcdn
+Version: 0.0.7
+Summary: A Python REST Client for MaxCDN REST Web Services
+Home-page: http://github.com/maxcdn/python-maxcdn
+Author: Joshua P. Mervine
+Author-email: joshua@mervine.net
+License: MIT
+Description: UNKNOWN
+Keywords: MaxCDN CDN API REST
+Platform: UNKNOWN

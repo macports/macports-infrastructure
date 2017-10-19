@@ -1,0 +1,9 @@
+setup.py
+maxcdn/__init__.py
+maxcdn/maxcdn.py
+maxcdn.egg-info/PKG-INFO
+maxcdn.egg-info/SOURCES.txt
+maxcdn.egg-info/dependency_links.txt
+maxcdn.egg-info/requires.txt
+maxcdn.egg-info/top_level.txt
+test/test.py

@@ -1,0 +1,1 @@
+from .maxcdn import MaxCDN

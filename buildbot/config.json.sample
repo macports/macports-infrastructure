@@ -5,12 +5,17 @@
     "slaveprefix":  "/opt/local",
     "toolsprefix":  "/opt/mports",
     "deploy": {
+        "maxcdn": {
+            "key": "",
+            "secret": ""
+        },
         "www": {
             "host": "",
             "user": "",
             "sshkeyfile": "",
             "sshknownhostsfile": "ssh_known_hosts",
-            "destpath": ""
+            "destpath": "",
+            "maxcdnzoneid": 0
         },
         "portindex": {
             "host": "",
@@ -23,7 +28,8 @@
             "user": "",
             "sshkeyfile": "",
             "sshknownhostsfile": "ssh_known_hosts",
-            "destpath": ""
+            "destpath": "",
+            "maxcdnzoneid": 0
         },
         "man": {
             "host": "",
