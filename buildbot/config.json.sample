@@ -6,8 +6,7 @@
     "toolsprefix":  "/opt/mports",
     "deploy": {
         "maxcdn": {
-            "key": "",
-            "secret": ""
+            "secrets": "/var/keys/maxcdn-secrets.json",
         },
         "www": {
             "host": "",

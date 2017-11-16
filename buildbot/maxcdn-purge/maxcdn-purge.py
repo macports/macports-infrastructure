@@ -5,20 +5,25 @@ from __future__ import print_function
 import sys
 import os
 import pprint as pp
+import json
 from maxcdn import MaxCDN
 
-if not all(k in os.environ for k in ["MAXCDN_KEY", "MAXCDN_SECRET"]):
-    print("Error: MAXCDN_KEY or MAXCDN_SECRET not set in environment!", file=sys.stderr)
-    sys.exit(1)
-
-if len(sys.argv) != 2:
-    print("Usage: {} <zoneid>".format(sys.argv[0]), file=sys.stderr)
+if len(sys.argv) != 3:
+    print("Usage: {} <zoneid> <secretsfile>".format(sys.argv[0]), file=sys.stderr)
     sys.exit(1)
 
 zoneid = sys.argv[1]
+
+with open(sys.argv[2]) as f:
+    config = json.load(f)
+
+if not all(k in config for k in ["key", "secret"]):
+    print("Error: secretsfile does not contain key and/or secret!", file=sys.stderr)
+    sys.exit(1)
+
 MAXCDN_ALIAS = "macports"
-MAXCDN_KEY = os.environ["MAXCDN_KEY"]
-MAXCDN_SECRET = os.environ["MAXCDN_SECRET"]
+MAXCDN_KEY = config['key']
+MAXCDN_SECRET = config['secret']
 
 # Initialize MaxCDN API
 maxcdn = MaxCDN(MAXCDN_ALIAS, MAXCDN_KEY, MAXCDN_SECRET)
