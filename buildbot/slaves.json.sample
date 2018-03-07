@@ -17,6 +17,7 @@
         "10.13_x86_64"
     ],
     "slaves": {
+        "jobs": "",
         "base-10.5_ppc": "",
         "ports-10.5_ppc_legacy": "",
         "base-10.6_x86_64": "",
