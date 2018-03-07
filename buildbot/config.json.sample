@@ -38,7 +38,7 @@
             "destpath": ""
         },
         "mirror": {
-            "distfilesdir": "",
+            "distfilesdir": ""
         }
     }
 }
