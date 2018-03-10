@@ -7,7 +7,7 @@
     "jobstoolsprefix":  "/opt/local",
     "deploy": {
         "maxcdn": {
-            "secrets": "/var/keys/maxcdn-secrets.json",
+            "secrets": "/var/keys/maxcdn-secrets.json"
         },
         "www": {
             "host": "",
@@ -21,7 +21,7 @@
             "host": "",
             "user": "",
             "sshkeyfile": "",
-            "sshknownhostsfile": "ssh_known_hosts",
+            "sshknownhostsfile": "ssh_known_hosts"
         },
         "guide": {
             "host": "",
