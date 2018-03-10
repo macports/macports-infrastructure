@@ -282,6 +282,14 @@ proc check_licenses {portName variantInfo verbose} {
     return 0
 }
 
+proc split_variants {variants} {
+    set result {}
+    set l [regexp -all -inline -- {([-+])([[:alpha:]_]+[\w\.]*)} $variants]
+    foreach { match sign variant } $l {
+        lappend result $variant $sign
+    }
+    return $result
+}
 
 # Begin
 
@@ -328,9 +336,10 @@ set ::argv [lrange $::argv 1 end]
 
 array set variantInfo {}
 foreach variantSetting $::argv {
-    set flag [string index $variantSetting 0]
-    set variantName [string range $variantSetting 1 end]
-    set variantInfo($variantName) $flag
+    set variant [split_variants $variantSetting]
+    foreach {variantName flag} $variant {
+        set variantInfo($variantName) $flag
+    }
 }
 
 exit [check_licenses $portName [array get variantInfo] $verbose]
