@@ -146,7 +146,11 @@ IMPORTANT! Change the following configuration options in config.json:
 > "slaveprefix":  "/opt/mp-buildbot/prefix"
 > "toolsprefix":  "/opt/local"
 
-Reconfigure the buildbot master:
+For a local test installation, also remove everything inside the "deploy" option:
+
+> "deploy": {}
+
+After the configuration changes, reconfigure the buildbot master:
 
     buildbot reconfig /opt/mp-buildbot/master
 
