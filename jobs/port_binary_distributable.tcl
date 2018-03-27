@@ -120,7 +120,7 @@ proc infoForPort {portName variantInfo} {
         return {}
     }
     array set portInfo [lindex $portSearchResult 1]
-    set mport [mportopen $portInfo(porturl) [list subport $portName] $variantInfo]
+    set mport [mportopen $portInfo(porturl) [list subport $portInfo(name)] $variantInfo]
     array unset portInfo
     array set portInfo [mportinfo $mport]
     # Closing the mport is actually fairly expensive and not really necessary
