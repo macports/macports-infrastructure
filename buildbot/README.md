@@ -78,12 +78,6 @@ This will use your copy of MacPorts in `/opt/local` for all tooling, but
 actual builds on the slave will be made in a separate prefix. Make sure
 this installation provides an up-to-date ports tree.
 
-You will need the subversion port in this prefix for tooling, as
-`/usr/bin/svn` will have problems validating the Subversion server
-certificate due to a well-known bug in Mac OS X >= 10.7.
-
-    sudo port install subversion
-
 
 #### 1. Install MacPorts into a new prefix
 
@@ -181,12 +175,3 @@ config.json should use prefixes such that packages are produced for /opt/local:
 
 When setting up the slaves, specify the hostname and port of the machine
 running the buildbot master instead of "localhost:9989".
-
-## Troubleshooting
-
-# Subversion checkout fails
-
-> svn: E170013: Unable to connect to a repository at URL 'https://svn.macports.org/repository/macports/contrib/mp-buildbot'
-> svn: E230001: Server SSL certificate verification failed: issuer is not trusted
-
-Install the `subversion` port to 'toolsprefix'.
