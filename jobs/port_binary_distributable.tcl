@@ -159,6 +159,9 @@ proc remove_version {license} {
 
 proc check_licenses {portName variantInfo verbose} {
     global license_good license_conflicts
+    if {$verbose} {
+        set variantSettings [join_variantInfo $variantInfo]
+    }
     array set portSeen {}
     set top_info [infoForPort $portName $variantInfo]
     if {$top_info eq {}} {
@@ -186,7 +189,7 @@ proc check_licenses {portName variantInfo verbose} {
         lappend top_license_names $sub_names
         if {!$any_good} {
             if {$verbose} {
-                puts "\"$portName\" is not distributable because its license \"$lic\" is not known to be distributable"
+                puts "\"$portName$variantSettings\" is not distributable because its license \"$lic\" is not known to be distributable"
             }
             return 1
         }
@@ -250,13 +253,13 @@ proc check_licenses {portName variantInfo verbose} {
 
             if {!$any_good} {
                 if {$verbose} {
-                    puts "\"$portName\" is not distributable because its dependency \"$aPort\" has license \"$lic\" which is not known to be distributable"
+                    puts "\"$portName$variantSettings\" is not distributable because its dependency \"$aPort\" has license \"$lic\" which is not known to be distributable"
                 }
                 return 1
             }
             if {!$any_compatible} {
                 if {$verbose} {
-                    puts "\"$portName\" is not distributable because its license \"$top_lic\" conflicts with license \"$full_lic\" of dependency \"$aPort\""
+                    puts "\"$portName$variantSettings\" is not distributable because its license \"$top_lic\" conflicts with license \"$full_lic\" of dependency \"$aPort\""
                 }
                 return 1
             }
@@ -276,7 +279,7 @@ proc check_licenses {portName variantInfo verbose} {
     }
 
     if {$verbose} {
-        puts "\"$portName\" is distributable"
+        puts "\"$portName$variantSettings\" is distributable"
     }
     return 0
 }
@@ -286,6 +289,14 @@ proc split_variants {variants} {
     set l [regexp -all -inline -- {(?:[[:space:]]|^)([-+])([[:alpha:]_]+[\w\.]*)(?:[[:space:]]|$)} $variants]
     foreach { match sign variant } $l {
         lappend result $variant $sign
+    }
+    return $result
+}
+
+proc join_variantInfo {variantInfo} {
+    set result {}
+    foreach {variant sign} $variantInfo {
+        append result " $sign$variant"
     }
     return $result
 }
