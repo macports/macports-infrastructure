@@ -116,7 +116,7 @@ proc infoForPort {portName variantInfo} {
     set dependencyList {}
     set portSearchResult [mportlookup $portName]
     if {[llength $portSearchResult] < 1} {
-        puts "Warning: port \"$portName\" not found"
+        puts stderr "Warning: port \"$portName\" not found"
         return {}
     }
     array set portInfo [lindex $portSearchResult 1]
@@ -309,7 +309,7 @@ while {[string index [lindex $::argv 0] 0] eq "-"} {
             set showVersion 1
         }
         default {
-            puts "Unknown option [lindex $::argv 0]"
+            puts stderr "Unknown option [lindex $::argv 0]"
             printUsage
             exit 2
         }
@@ -327,7 +327,7 @@ if {$showVersion} {
 }
 
 if {[llength $::argv] == 0} {
-    puts "Error: missing port-name"
+    puts stderr "Error: missing port-name"
     printUsage
     exit 2
 }
