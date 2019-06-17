@@ -44,6 +44,7 @@ OPENSSL="/usr/bin/openssl"
 AWK="/usr/bin/awk"
 STAT="/opt/local/bin/gstat"
 BASENAME="/usr/bin/basename"
+TCLSH="/opt/local/bin/port-tclsh"
 
 # Paths we'll work on:
 ROOT=/var/tmp/macports
@@ -52,10 +53,14 @@ GITROOT=/var/tmp/macports
 TBASE=${GITROOT}/trunk/base
 RBASE=${GITROOT}/release/base
 PORTS=${GITROOT}/release/ports
+CONTRIB=${GITROOT}/release/contrib
 RSYNCROOT=/rsync/macports
 PORTINDEX=${PREFIX}/bin/portindex
 
 PATH=${PREFIX}/bin:/bin:/usr/bin:/usr/sbin:/opt/local/bin
+
+# Files to be used
+PORTINDEX2JSON=${CONTRIB}/portindex2json/portindex2json.tcl
 
 # Platforms we generate indexes for. This is intentionally split on
 # whitespace later.
@@ -64,6 +69,7 @@ PLATFORMS="8_powerpc 8_i386 9_powerpc 9_i386 10_i386 11_i386 12_i386 13_i386 14_
 # Sources information:
 BASEURL=https://github.com/macports/macports-base.git
 PORTSURL=https://github.com/macports/macports-ports.git
+CONTRIBURL=https://github.com/macports/macports-contrib.git
 RELEASE_URL_FILE=config/RELEASE_URL
 
 # private key to use for signing
@@ -147,6 +153,17 @@ else
     ${GIT} clone -q --depth 1 "${PORTSURL}" "${PORTS}"
 fi
 
+#
+# Update release/contrib
+#
+
+if [ -d "${CONTRIB}"/.git ]; then
+    cd "${CONTRIB}"
+    ${GIT} pull -q
+else
+    ${GIT} clone -q "${CONTRIBURL}" "${CONTRIB}"
+fi
+
 if [ "${RBASE_CHANGED}" -eq 1 ]; then
     PORTS_CHANGED=1
     (
@@ -179,6 +196,13 @@ if [ "${PORTS_CHANGED}" -eq 1 ]; then
                 | expand -t 40,48,56,64,72,80 &
         done
         wait
+
+        # generate json for each platform-specific index
+        for PLATFORM in $PLATFORMS; do
+            INDEX="PortIndex_darwin_${PLATFORM}"
+            ${TCLSH} "${PORTINDEX2JSON}" "${INDEX}"/PortIndex > "${INDEX}"/PortIndex.json &
+        done
+        wait
     )
 fi
 
@@ -205,7 +229,7 @@ if [ "${RBASE_CHANGED}" -eq 1 ]; then
     sign "${ROOT}"/base.tar
 fi
 if [ "${PORTS_CHANGED}" -eq 1 ]; then
-    ${TAR} -C "${RSYNCROOT}"/release/ -czf "${ROOT}"/ports.tar.gz ports
+    ${TAR} --exclude 'PortIndex*/PortIndex.json' -C "${RSYNCROOT}"/release/ -czf "${ROOT}"/ports.tar.gz ports
 
     ${TAR} --exclude 'PortIndex*' -C "${RSYNCROOT}"/release/ -cf "${ROOT}"/ports.tar ports
     for INDEX_DIR in "${RSYNCROOT}"/release/ports/PortIndex_*; do
