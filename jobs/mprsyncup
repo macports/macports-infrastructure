@@ -56,7 +56,7 @@ OPENSSL="/usr/bin/openssl"
 AWK="/usr/bin/awk"
 STAT="${MPBIN}/gstat"
 BASENAME="/usr/bin/basename"
-TCLSH="${MPBIN}/port-tclsh"
+TCLSH="${PREFIX}/bin/port-tclsh"
 PORTINDEX="${PREFIX}/bin/portindex"
 PORTINDEX2JSON="${CONTRIB}/portindex2json/portindex2json.tcl"
 
