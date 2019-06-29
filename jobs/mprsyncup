@@ -39,23 +39,25 @@ RBASE=${GITROOT}/release/base
 PORTS=${GITROOT}/release/ports
 CONTRIB=${GITROOT}/release/contrib
 RSYNCROOT=/rsync/macports
+MPTOOLSPREFIX=/opt/local
+MPBIN=${MPTOOLSPREFIX}/bin
 
 # Commands we need. For options to be substituted correctly, these must
 # not be substituted within double quotes. Thus, there must not be any
 # globbing characters, and the command itself must not contain spaces.
-GIT="/opt/local/bin/git"
-RSYNC="/opt/local/bin/rsync -q"
+GIT="${MPBIN}/git"
+RSYNC="${MPBIN}/rsync -q"
 RM="/bin/rm"
 MKDIR="/bin/mkdir"
-MV="/opt/local/bin/gmv"
+MV="${MPBIN}/gmv"
 LN="/bin/ln"
 TAR="/usr/bin/tar"
 OPENSSL="/usr/bin/openssl"
 AWK="/usr/bin/awk"
-STAT="/opt/local/bin/gstat"
+STAT="${MPBIN}/gstat"
 BASENAME="/usr/bin/basename"
-TCLSH="/opt/local/bin/port-tclsh"
-PORTINDEX=${PREFIX}/bin/portindex
+TCLSH="${MPBIN}/port-tclsh"
+PORTINDEX="${PREFIX}/bin/portindex"
 
 PATH=${PREFIX}/bin:/bin:/usr/bin:/usr/sbin:/opt/local/bin
 
