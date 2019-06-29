@@ -58,11 +58,9 @@ STAT="${MPBIN}/gstat"
 BASENAME="/usr/bin/basename"
 TCLSH="${MPBIN}/port-tclsh"
 PORTINDEX="${PREFIX}/bin/portindex"
+PORTINDEX2JSON="${CONTRIB}/portindex2json/portindex2json.tcl"
 
 PATH=${PREFIX}/bin:/bin:/usr/bin:/usr/sbin:/opt/local/bin
-
-# Files to be used
-PORTINDEX2JSON=${CONTRIB}/portindex2json/portindex2json.tcl
 
 # Platforms we generate indexes for. This is intentionally split on
 # whitespace later.
