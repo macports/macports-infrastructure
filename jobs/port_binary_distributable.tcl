@@ -2,7 +2,6 @@
 # -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
 # \
 if type -fp port-tclsh >/dev/null; then exec port-tclsh "$0" "$@"; else exec /usr/bin/tclsh "$0" "$@"; fi
-# $Id$
 #
 # Check that binaries of a port are distributable by looking at its license
 # and the licenses of its dependencies.
@@ -10,12 +9,12 @@ if type -fp port-tclsh >/dev/null; then exec port-tclsh "$0" "$@"; else exec /us
 # Expected format: A {B C} means the license is A plus either B or C.
 #
 # Exit status:
-# 0: distributable
-# 1: non-distributable
+# 0: all specified ports are distributable
+# 1: at least one of the specified ports is not distributable
 # 2: error
 
 
-set MY_VERSION 0.1
+set MY_VERSION 0.2
 
 array set portsSeen {}
 
@@ -100,7 +99,7 @@ array set license_conflicts \
     zpl-1 {agpl cecill gpl}"
 
 proc printUsage {} {
-    puts "Usage: $::argv0 \[-hvV\] port-name \[variants...\]"
+    puts "Usage: $::argv0 \[-hvV\] port-name \[variants...\] \[port-name \[variants...\] ...\]"
     puts "  -h    This help"
     puts "  -v    verbose output"
     puts "  -V    show version and MacPorts version being used"
@@ -160,6 +159,9 @@ proc remove_version {license} {
 
 proc check_licenses {portName variantInfo verbose} {
     global license_good license_conflicts
+    if {$verbose} {
+        set variantSettings [join_variantInfo $variantInfo]
+    }
     array set portSeen {}
     set top_info [infoForPort $portName $variantInfo]
     if {$top_info eq {}} {
@@ -187,7 +189,7 @@ proc check_licenses {portName variantInfo verbose} {
         lappend top_license_names $sub_names
         if {!$any_good} {
             if {$verbose} {
-                puts "\"$portName\" is not distributable because its license \"$lic\" is not known to be distributable"
+                puts "\"$portName$variantSettings\" is not distributable because its license \"$lic\" is not known to be distributable"
             }
             return 1
         }
@@ -251,13 +253,13 @@ proc check_licenses {portName variantInfo verbose} {
 
             if {!$any_good} {
                 if {$verbose} {
-                    puts "\"$portName\" is not distributable because its dependency \"$aPort\" has license \"$lic\" which is not known to be distributable"
+                    puts "\"$portName$variantSettings\" is not distributable because its dependency \"$aPort\" has license \"$lic\" which is not known to be distributable"
                 }
                 return 1
             }
             if {!$any_compatible} {
                 if {$verbose} {
-                    puts "\"$portName\" is not distributable because its license \"$top_lic\" conflicts with license \"$full_lic\" of dependency \"$aPort\""
+                    puts "\"$portName$variantSettings\" is not distributable because its license \"$top_lic\" conflicts with license \"$full_lic\" of dependency \"$aPort\""
                 }
                 return 1
             }
@@ -277,16 +279,24 @@ proc check_licenses {portName variantInfo verbose} {
     }
 
     if {$verbose} {
-        puts "\"$portName\" is distributable"
+        puts "\"$portName$variantSettings\" is distributable"
     }
     return 0
 }
 
 proc split_variants {variants} {
     set result {}
-    set l [regexp -all -inline -- {([-+])([[:alpha:]_]+[\w\.]*)} $variants]
+    set l [regexp -all -inline -- {(?:[[:space:]]|^)([-+])([[:alpha:]_]+[\w\.]*)(?:[[:space:]]|$)} $variants]
     foreach { match sign variant } $l {
         lappend result $variant $sign
+    }
+    return $result
+}
+
+proc join_variantInfo {variantInfo} {
+    set result {}
+    foreach {variant sign} $variantInfo {
+        append result " $sign$variant"
     }
     return $result
 }
@@ -331,15 +341,26 @@ if {[llength $::argv] == 0} {
     printUsage
     exit 2
 }
-set portName [lindex $::argv 0]
-set ::argv [lrange $::argv 1 end]
 
-array set variantInfo {}
-foreach variantSetting $::argv {
-    set variant [split_variants $variantSetting]
-    foreach {variantName flag} $variant {
-        set variantInfo($variantName) $flag
+set exitCode 0
+set argvIndex 0
+
+while {$argvIndex < [llength $::argv]} {
+    set portName [lindex $::argv $argvIndex]
+    incr argvIndex
+    array set variantInfo {}
+    while {$argvIndex < [llength $::argv]} {
+        set variant [split_variants [lindex $::argv $argvIndex]]
+        if {$variant eq ""} {
+            break
+        }
+        foreach {variantName variantFlag} $variant {
+            set variantInfo($variantName) $variantFlag
+        }
+        incr argvIndex
     }
+    set exitCode [max $exitCode [check_licenses $portName [array get variantInfo] $verbose]]
+    unset variantInfo
 }
 
-exit [check_licenses $portName [array get variantInfo] $verbose]
+exit $exitCode
