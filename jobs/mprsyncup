@@ -200,7 +200,7 @@ if [ "${PORTS_CHANGED}" -eq 1 ]; then
         # generate json for each platform-specific index
         for PLATFORM in $PLATFORMS; do
             INDEX="PortIndex_darwin_${PLATFORM}"
-            ${TCLSH} "${PORTINDEX2JSON}" "${INDEX}"/PortIndex > "${INDEX}"/PortIndex.json &
+            ${TCLSH} "${PORTINDEX2JSON}" "${INDEX}"/PortIndex --info commit="${PORTS_NEW_REV}" > "${INDEX}"/PortIndex.json &
         done
         wait
     )
