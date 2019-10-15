@@ -1,8 +1,5 @@
-#!/bin/sh
+#!/usr/bin/env port-tclsh
 # -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
-# \
-if type -fp port-tclsh >/dev/null; then exec port-tclsh "$0" "$@"; else exec /usr/bin/tclsh "$0" "$@"; fi
-# $Id$
 #
 # Check that binaries of a port are distributable by looking at its license
 # and the licenses of its dependencies.
@@ -16,8 +13,6 @@ if type -fp port-tclsh >/dev/null; then exec port-tclsh "$0" "$@"; else exec /us
 
 
 set MY_VERSION 0.1
-
-array set portsSeen {}
 
 set check_deptypes {depends_build depends_lib}
 
@@ -129,8 +124,7 @@ proc infoForPort {portName variantInfo} {
     foreach dependencyType $check_deptypes {
         if {[info exists portInfo($dependencyType)] && $portInfo($dependencyType) ne ""} {
             foreach dependency $portInfo($dependencyType) {
-                set afterColon [expr {[string last ":" $dependency] + 1}]
-                lappend dependencyList [string range $dependency $afterColon end]
+                lappend dependencyList [string range $dependency [string last ":" $dependency]+1 end]
             }
         }
     }
@@ -151,8 +145,8 @@ proc infoForPort {portName variantInfo} {
 # return license with any trailing dash followed by a number and/or plus sign removed
 proc remove_version {license} {
     set dash [string last - $license]
-    if {$dash != -1 && [regexp {[0-9.+]+} [string range $license [expr {$dash + 1}] end]]} {
-        return [string range $license 0 [expr {$dash - 1}]]
+    if {$dash != -1 && [regexp {[0-9.+]+} [string range $license $dash+1 end]]} {
+        return [string range $license 0 $dash-1]
     } else {
         return $license
     }
