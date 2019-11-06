@@ -43,19 +43,21 @@ package require macports
 mportinit
 
 set platforms [list 8 powerpc 8 i386 9 powerpc 9 i386]
-foreach vers {10 11 12 13 14 15 16 17} {
+foreach vers {10 11 12 13 14 15 16 17 18 19} {
     if {${macports::os_major} != $vers} {
         lappend platforms $vers i386
     }
 }
+# build_arch values that could be considered "native" on platforms
+# where 'uname -p' says 'i386'
+set i386_archs [list x86_64 noarch i386]
 
 if {[catch {set res [mportlistall]} result]} {
     puts stderr "$::errorInfo"
     error "listing all ports failed: $result"
 }
 
-proc add_distfiles {porturl subport distfiles_var} {
-    global platforms
+proc add_distfiles {porturl subport distfiles_var check_platforms} {
     upvar $distfiles_var portname_distfiles
     if {[catch {mportopen $porturl [list subport $subport] {}} mport]} {
         ui_error "mportopen $porturl failed: $mport"
@@ -85,7 +87,7 @@ proc add_distfiles {porturl subport distfiles_var} {
         mportclose $mport
     }
 
-    foreach {os_major os_arch} $platforms {
+    foreach {os_major os_arch} $check_platforms {
         #ui_msg "$subport with platform 'darwin $os_major $os_arch'"
         if {[catch {mportopen $porturl [list subport $subport os_major $os_major os_arch $os_arch] {}} mport]} {
             ui_error "mportopen $porturl failed: $mport"
@@ -120,11 +122,23 @@ if {[info exists keepfile]} {
             # shouldn't be mirrored, so don't keep it if it is somehow there
             continue
         }
-        add_distfiles $portinfo(porturl) $portname portname_distfiles
+        add_distfiles $portinfo(porturl) $portname portname_distfiles $platforms
         foreach archive [glob -nocomplain -directory $packages_root ${portname}/*.${archive_type}] {
             exec -ignorestderr tar -xjq -C ${portfile_dir} -f $archive +PORTFILE
             file rename -force ${portfile_dir}/+PORTFILE ${portfile_dir}/Portfile
-            add_distfiles file://${portfile_dir} $portname portname_distfiles
+            # figure out the platform from the filename
+            set segments [split [file tail $archive] .]
+            set archs [split [lindex $segments end-1] -]
+            set major [lindex [split [lindex $segments end-2] _] end]
+            set this_platforms [list]
+            foreach arch $archs {
+                if {$arch in $i386_archs} {
+                    lappend this_platforms $major i386
+                } else {
+                    lappend this_platforms $major powerpc
+                }
+            }
+            add_distfiles file://${portfile_dir} $portname portname_distfiles $this_platforms
         }
         # deduplicate as we go
         lappend distfiles_to_keep {*}[lsort -unique $portname_distfiles]
