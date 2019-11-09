@@ -1,3 +1,5 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
 # Library code for checking if ports are binary distributable.
 # Used by the port_binary_distributable tool.
 
@@ -81,15 +83,81 @@ array set license_conflicts \
     zpl-1 [list agpl cecill gpl] \
     ]
 
+# license database format:
+# each line consists of "portname mtime {array}"
+# where array is one or more {variant_string {dependencies license installs_libs [license_noconflict]}}
+
+# load database if it exists
+proc init_license_db {dbpath} {
+    if {[file isfile ${dbpath}/license_db]} {
+        set fd [open ${dbpath}/license_db r]
+        while {[gets $fd entry] >= 0} {
+            set ::license_db([lindex $entry 0]) [lrange $entry 1 end]
+        }
+        close $fd
+    }
+}
+
+# write out database
+proc write_license_db {dbpath} {
+    if {![file isdirectory dbpath]} {
+        file mkdir $dbpath
+    }
+    set fd [open ${dbpath}/license_db w]
+    foreach portname [array names ::license_db] {
+        puts $fd [list $portname {*}$::license_db($portname)]
+    }
+    close $fd
+}
+
+# purge old ports from database
+proc cleanup_license_db {dbpath} {
+    if {[file isfile ${dbpath}/license_db]} {
+        set fd [open ${dbpath}/license_db r]
+        set content [read $fd]
+        close $fd
+        set fd [open ${dbpath}/license_db w]
+        foreach entry [split $content \n] {
+            set portSearchResult [mportlookup [lindex $entry 0]]
+            if {$portSearchResult ne ""} {
+                array set portInfo [lindex $portSearchResult 1]
+                set portfile_path [macports::getportdir $portInfo(porturl)]/Portfile
+                if {[file mtime $portfile_path] == [lindex $entry 1]} {
+                    puts $fd $entry
+                }
+                array unset portInfo
+            }
+        }
+        close $fd
+    }
+}
+
 # return deps and license for given port
 proc infoForPort {portName variantInfo} {
-    set dependencyList {}
     set portSearchResult [mportlookup $portName]
     if {[llength $portSearchResult] < 1} {
         puts stderr "Warning: port \"$portName\" not found"
         return {}
     }
     array set portInfo [lindex $portSearchResult 1]
+    set portfile_path [macports::getportdir $portInfo(porturl)]/Portfile
+    set variant_string [normalize_variants $variantInfo]
+
+    # check if the port's info is already in the db
+    if {[info exists ::license_db($portName)]} {
+        set info_list $::license_db($portName)
+        if {[file mtime $portfile_path] == [lindex $info_list 0]} {
+            # keyed by normalized variant string
+            array set info_array [lindex $info_list 1]
+            if {[info exists info_array($variant_string)]} {
+                return $info_array($variant_string)
+            }
+        } else {
+            unset ::license_db($portName)
+        }
+    }
+
+    set dependencyList {}
     set mport [mportopen $portInfo(porturl) [list subport $portInfo(name)] $variantInfo]
     array unset portInfo
     array set portInfo [mportinfo $mport]
@@ -114,6 +182,11 @@ proc infoForPort {portName variantInfo} {
     if {[info exists portInfo(license_noconflict)]} {
         lappend ret $portInfo(license_noconflict)
     }
+
+    # update the db
+    set info_array($variant_string) $ret
+    set ::license_db($portName) [list [file mtime $portfile_path] [array get info_array]]
+
     return $ret
 }
 
@@ -239,6 +312,7 @@ proc check_licenses {portName variantInfo} {
     return [list 0 "\"$portName\" is distributable"]
 }
 
+# given a variant string, return an array of variations
 set split_variants_re {([-+])([[:alpha:]_]+[\w\.]*)}
 proc split_variants {variants} {
     set result {}
@@ -247,4 +321,14 @@ proc split_variants {variants} {
         lappend result $variant $sign
     }
     return $result
+}
+
+# given an array of variations, return a variant string in normalized form
+proc normalize_variants {variations} {
+    array set varray $variations
+    set variant_string ""
+    foreach vname [lsort -ascii [array names varray]] {
+        append variant_string $varray($vname)${vname}
+    }
+    return $variant_string
 }

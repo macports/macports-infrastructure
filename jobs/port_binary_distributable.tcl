@@ -16,10 +16,11 @@ set MY_VERSION 0.1
 source [file join [file dirname [info script]] distributable_lib.tcl]
 
 proc printUsage {} {
-    puts "Usage: $::argv0 \[-hvV\] port-name \[variants...\]"
-    puts "  -h    This help"
-    puts "  -v    verbose output"
-    puts "  -V    show version and MacPorts version being used"
+    puts "Usage: $::argv0 \[-d dir\] \[-hvV\] port-name \[variants...\]"
+    puts "  -d dir  Use directory 'dir' for persistent data storage"
+    puts "  -h      This help"
+    puts "  -v      verbose output"
+    puts "  -V      show version and MacPorts version being used"
     puts ""
     puts "port-name is the name of a port to check"
     puts "variants is the list of variants to enable/disable: +one -two..."
@@ -27,9 +28,18 @@ proc printUsage {} {
 
 set verbose 0
 set showVersion 0
+set dbdir ""
 
 while {[string index [lindex $::argv 0] 0] eq "-"} {
     switch [string range [lindex $::argv 0] 1 end] {
+        d {
+            if {[llength $::argv] < 2} {
+                printUsage
+                exit 2
+            }
+            set dbdir [lindex $::argv 1]
+            set ::argv [lrange $::argv 1 end]
+        }
         h {
             printUsage
             exit 0
@@ -66,6 +76,10 @@ if {[llength $::argv] == 0} {
 set portName [lindex $::argv 0]
 set ::argv [lrange $::argv 1 end]
 
+if {$dbdir ne ""} {
+    init_license_db $dbdir
+}
+
 array set variantInfo {}
 foreach variantSetting $::argv {
     set variant [split_variants $variantSetting]
@@ -75,6 +89,9 @@ foreach variantSetting $::argv {
 }
 
 set results [check_licenses $portName [array get variantInfo]]
+if {$dbdir ne ""} {
+    write_license_db $dbdir
+}
 if {$verbose} {
     puts [lindex $results 1]
 }
