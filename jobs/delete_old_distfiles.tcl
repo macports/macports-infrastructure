@@ -4,6 +4,8 @@
 # the current version of any port or by a version existing as a package
 # under packages_root.
 
+set start_time [clock seconds]
+
 if {[llength $argv] == 4 && [lindex $argv 0] eq "-k"} {
     set keepfile [lindex $argv 1]
     set argv [lrange $argv 2 end]
@@ -163,7 +165,7 @@ while {$dirlist ne ""} {
     set dir [lindex $dirlist 0]
     set dirlist [lreplace $dirlist 0 0]
     foreach f [glob -nocomplain -directory $dir *] {
-        if {[file isfile $f] && [lsearch -exact -sorted $distfiles_to_keep [file tail $f]] == -1} {
+        if {[file isfile $f] && [file mtime $f] < $start_time && [lsearch -exact -sorted $distfiles_to_keep [file tail $f]] == -1} {
             puts $fd $f
         } elseif {[file isdirectory $f]} {
             lappend dirlist $f
