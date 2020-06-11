@@ -49,7 +49,7 @@ printf "Rebuild successful, tagging as %s:latest\n" "$CONTAINERNAME"
 docker tag "$CONTAINERNAME:$NEWREV-$TIMESTAMP" "$CONTAINERNAME:latest"
 
 # Stop currently running container to force systemd to restart it
-RUNNING_CONTAINER_ID=$(docker container inspect --format "{{.ID}}" "$CONTAINERNAME")
+RUNNING_CONTAINER_ID=$(docker container inspect --format "{{.ID}}" "$CONTAINERNAME" 2>/dev/null || true)
 if [ -n "$RUNNING_CONTAINER_ID" ]; then
 	printf "Stopping running instance %s of container %s\n" "$RUNNING_CONTAINER_ID" "$CONTAINERNAME"
 	docker stop "$RUNNING_CONTAINER_ID"
