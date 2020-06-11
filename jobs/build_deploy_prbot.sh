@@ -28,18 +28,19 @@ fi
 # Allow overriding the path to the go executable
 GO=${GO:-go}
 
-MPBOT_PACKAGE_NAME=github.com/macports/mpbot-github
-MPBOT_GITHUB_SRC=$GOPATH/src/$MPBOT_PACKAGE_NAME
+MPBOT_GITHUB_URL=https://github.com/macports/mpbot-github
+MPBOT_GITHUB_SRC=/var/www/prbot/mpbot-github
+MPBOT_GITHUB_SUBFOLDER=pr/prbot
 PRBOT_CURRENT=$GOPATH/bin/prbot-current
 PRBOT_NEXT=$GOPATH/bin/prbot-next
 
 # Set up GOPATH, fetch or update source
-mkdir -p "$GOPATH/src/github.com/macports"
+mkdir -p "$GOPATH"
 if [ -d "$MPBOT_GITHUB_SRC" ]; then
 	git -C "$MPBOT_GITHUB_SRC" fetch --quiet || true # Ignore network problems assuming they are temporary
 	git -C "$MPBOT_GITHUB_SRC" reset --quiet --hard origin/master
 else
-	git clone --quiet "https://$MPBOT_PACKAGE_NAME" "$MPBOT_GITHUB_SRC"
+	git clone --quiet "$MPBOT_GITHUB_URL" "$MPBOT_GITHUB_SRC"
 fi
 
 # Find out whether there are new changes to be deployed
@@ -60,9 +61,9 @@ if [ "$HEADREV" = "$CURRENTREV" ]; then
 fi
 
 # Get dependencies
-"$GO" get -u "$MPBOT_PACKAGE_NAME/pr/prbot"
+(cd "$MPBOT_GITHUB_SRC/$MPBOT_GITHUB_SUBFOLDER" && "$GO" get)
 # Install
-"$GO" install "$MPBOT_PACKAGE_NAME/pr/prbot"
+(cd "$MPBOT_GITHUB_SRC/$MPBOT_GITHUB_SUBFOLDER" && "$GO" install)
 
 # Update symlink
 mv "$GOPATH/bin/prbot" "$GOPATH/bin/prbot-$HEADREV"
