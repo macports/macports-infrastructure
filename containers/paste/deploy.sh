@@ -56,9 +56,10 @@ if [ -n "$RUNNING_CONTAINER_ID" ]; then
 fi
 
 # Cleanup old images
-CLEANUP_IMAGES=$(docker images --format "{{.ID}}" --filter "before=$CONTAINERNAME:$NEWREV-$TIMESTAMP" | sed "1,${KEEP_OLD_VERSIONS}d" | tr '\n' ' ')
-if [ -n "$CLEANUP_IMAGES" ]; then
-	docker rmi "$CLEANUP_IMAGES"
+CLEANUP_IMAGES_STRING=$(docker images --format "{{.ID}}" --filter "before=$CONTAINERNAME:$NEWREV-$TIMESTAMP" "$CONTAINERNAME" | sed "1,${KEEP_OLD_VERSIONS}d" | tr '\n' ' ')
+if [ -n "$CLEANUP_IMAGES_STRING" ]; then
+	IFS=' ' read -r -a CLEANUP_IMAGES <<<"$CLEANUP_IMAGES_STRING"
+	docker rmi "${CLEANUP_IMAGES[@]}"
 fi
 
 printf "Updated %s to %s\n" "$CONTAINERNAME" "$NEWREV-$TIMESTAMP"
