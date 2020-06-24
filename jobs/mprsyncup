@@ -264,3 +264,5 @@ if [ "${PORTS_CHANGED}" -eq 1 ]; then
     done
     ${RM} -rf "${ROOT}"/PortIndex_*
 fi
+
+printf "Done\n"
