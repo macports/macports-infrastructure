@@ -93,6 +93,8 @@ if {$dbdir ne ""} {
     write_license_db $dbdir
 }
 if {$verbose} {
-    puts [lindex $results 1]
+    foreach result [lindex $results 1] {
+        puts $result
+    }
 }
 exit [lindex $results 0]

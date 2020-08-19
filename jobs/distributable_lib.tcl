@@ -203,6 +203,7 @@ proc remove_version {license} {
 
 proc check_licenses {portName variantInfo} {
     array set portSeen {}
+    set failures {}
     set top_info [infoForPort $portName $variantInfo]
     if {$top_info eq {}} {
         return 1
@@ -219,26 +220,34 @@ proc check_licenses {portName variantInfo} {
         set sub_names {}
         foreach full_lic $sublist {
             # chop off any trailing version number
-            set lic [remove_version [string tolower $full_lic]]
+            set lic [remove_version $full_lic]
             # add name to the list for later
             lappend sub_names $lic
-            if {[info exists ::license_good($lic)]} {
+            if {[info exists ::license_good([string tolower $lic])]} {
                 set any_good 1
             }
         }
         lappend top_license_names $sub_names
         if {!$any_good} {
-            return [list 1 "\"$portName\" is not distributable because its license \"$lic\" is not known to be distributable"]
+            lappend failures "\"$portName\" is not distributable because its license \"$lic\" is not known to be distributable"
         }
     }
 
     # start with deps of top-level port
+    set portPaths [dict create [lindex $top_info 0] [list]]
     set portList [lindex $top_info 0]
+    foreach aPort $portList {
+        dict set portPaths $aPort [list]
+    }
+
     while {[llength $portList] > 0} {
         set aPort [lindex $portList 0]
+        set portList [lreplace $portList 0 0]
+        if {[info exists portSeen($aPort)] && $portSeen($aPort) eq 1} {
+            continue
+        }
         # mark as seen and remove from the list
         set portSeen($aPort) 1
-        set portList [lreplace $portList 0 0]
         if {[info exists noconflict_ports($aPort)]} {
             continue
         }
@@ -252,6 +261,7 @@ proc check_licenses {portName variantInfo} {
         if {!$installs_libs} {
             continue
         }
+        set parentPath [list {*}[dict get $portPaths $aPort] $aPort]
         foreach sublist $aPortLicense {
             set any_good 0
             set any_compatible 0
@@ -289,10 +299,9 @@ proc check_licenses {portName variantInfo} {
             }
 
             if {!$any_good} {
-                return [list 1 "\"$portName\" is not distributable because its dependency \"$aPort\" has license \"$lic\" which is not known to be distributable"]
-            }
-            if {!$any_compatible} {
-                return [list 1 "\"$portName\" is not distributable because its license \"$top_lic\" conflicts with license \"$full_lic\" of dependency \"$aPort\""]
+                lappend failures "\"$portName\" is not distributable because its dependency \"$aPort\" has license \"$full_lic\" which is not known to be distributable: [join $parentPath " -> "]"
+            } elseif {!$any_compatible} {
+                lappend failures "\"$portName\" is not distributable because its license \"$top_lic\" conflicts with license \"$full_lic\": [join $parentPath " -> "]"
             }
         }
 
@@ -305,11 +314,16 @@ proc check_licenses {portName variantInfo} {
         foreach possiblyNewPort [lindex $aPortInfo 0] {
             if {![info exists portSeen($possiblyNewPort)] && ![info exists aPort_noconflict_ports($possiblyNewPort)]} {
                 lappend portList $possiblyNewPort
+                dict set portPaths $possiblyNewPort $parentPath
             }
         }
     }
 
-    return [list 0 "\"$portName\" is distributable"]
+    if {[llength $failures] ne 0} {
+        return [list 1 $failures]
+    } else {
+        return [list 0 [list "\"$portName\" is distributable"]]
+    }
 }
 
 # given a variant string, return an array of variations
