@@ -157,7 +157,7 @@ proc infoForPort {portName variantInfo} {
         }
     }
 
-    set dependencyList {}
+    set dependencyList [list]
     set mport [mportopen $portInfo(porturl) [list subport $portInfo(name)] $variantInfo]
     array unset portInfo
     array set portInfo [mportinfo $mport]
@@ -211,12 +211,12 @@ proc check_licenses {portName variantInfo} {
     foreach noconflict_port [lindex $top_info 3] {
         set noconflict_ports($noconflict_port) 1
     }
-    set top_license_names {}
+    set top_license_names [list]
     # check that top-level port's license(s) are good
     foreach sublist $top_license {
         # each element may be a list of alternatives (i.e. only one need apply)
         set any_good 0
-        set sub_names {}
+        set sub_names [list]
         foreach full_lic $sublist {
             # chop off any trailing version number
             set lic [remove_version [string tolower $full_lic]]
@@ -315,7 +315,7 @@ proc check_licenses {portName variantInfo} {
 # given a variant string, return an array of variations
 set split_variants_re {([-+])([[:alpha:]_]+[\w\.]*)}
 proc split_variants {variants} {
-    set result {}
+    set result [list]
     set l [regexp -all -inline -- $::split_variants_re $variants]
     foreach { match sign variant } $l {
         lappend result $variant $sign

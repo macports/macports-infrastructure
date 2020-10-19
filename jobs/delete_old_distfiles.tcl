@@ -29,7 +29,7 @@ proc get_variants {portinfovar} {
     if {![info exists portinfo(vinfo)]} {
         return {}
     }
-    set variants {}
+    set variants [list]
     array set vinfo $portinfo(vinfo)
     foreach v [array names vinfo] {
         array unset variant
@@ -104,7 +104,7 @@ proc add_distfiles {porturl subport distfiles_var check_platforms} {
     }
 }
 
-set distfiles_to_keep {}
+set distfiles_to_keep [list]
 if {[info exists keepfile]} {
     set fd [open $keepfile r]
     while {[gets $fd line] != -1} {
@@ -117,7 +117,7 @@ if {[info exists keepfile]} {
     file delete -force ${portfile_dir}
     file mkdir ${portfile_dir}
     foreach {portname info_list} $result {
-        set portname_distfiles {}
+        set portname_distfiles [list]
         array unset portinfo
         array set portinfo $info_list
         if {[lsearch -exact -nocase $portinfo(license) "nomirror"] >= 0} {
