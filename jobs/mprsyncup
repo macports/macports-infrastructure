@@ -151,6 +151,7 @@ if [ -d "${PORTS}/.git" ]; then
     [ "${PORTS_OLD_REV}" = "${PORTS_NEW_REV}" ] && PORTS_CHANGED=0
 else
     ${GIT} clone -q --depth 1 "${PORTSURL}" "${PORTS}"
+    PORTS_NEW_REV="$(${GIT} rev-parse HEAD)"
 fi
 
 #
