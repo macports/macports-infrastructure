@@ -158,7 +158,12 @@ proc infoForPort {portName variantInfo} {
     }
 
     set dependencyList [list]
-    set mport [mportopen $portInfo(porturl) [list subport $portInfo(name)] $variantInfo]
+    if {[catch {mportopen $portInfo(porturl) [list subport $portInfo(name)] $variantInfo} result]} {
+        puts stderr "Warning: port \"$portName\" failed to open: $result"
+        return {}
+    } else {
+        set mport $result
+    }
     array unset portInfo
     array set portInfo [mportinfo $mport]
     # Closing the mport is actually fairly expensive and not really necessary
