@@ -166,8 +166,9 @@ proc infoForPort {portName variantInfo} {
     }
     array unset portInfo
     array set portInfo [mportinfo $mport]
-    # Closing the mport is actually fairly expensive and not really necessary
-    #mportclose $mport
+    # Quicker not to close the mport, but memory use might become
+    # excessive when processing many ports.
+    mportclose $mport
 
     foreach dependencyType $::check_deptypes {
         if {[info exists portInfo($dependencyType)] && $portInfo($dependencyType) ne ""} {
