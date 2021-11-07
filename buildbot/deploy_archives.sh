@@ -12,15 +12,18 @@ if [[ -z "$DLPATH" ]]; then
     DLPATH="./deployed_archives"
 fi
 
+# Always lock, because multiple builders may be deploying files with
+# the same names at the same time, so unique subdirs are not enough.
+# See: https://trac.macports.org/ticket/62977
+NEED_LOCK=1
+
 # path where archives get uploaded to buildmaster
 if [[ -z "$ULPATH" ]]; then
     # workaround for buildbot not accepting WithProperties in env
     if [[ -n "$1" ]]; then
         ULPATH="$1"
-        # assume a unique path is used per builder so no locking is needed
     else
         ULPATH="./archive_staging"
-        NEED_LOCK=1
     fi
 fi
 
@@ -37,7 +40,20 @@ if [[ -n "$NEED_LOCK" ]]; then
     fi
 
     echo Acquiring lock...
-    lockfile $LOCKFILE -r -1
+    if [[ "`uname -s`" = "Darwin" ]]; then
+        SLEPT=0
+        while ! shlock -f "$LOCKFILE" -p $$; do
+            sleep 1
+            let SLEPT="$SLEPT + 1"
+            if [[ "$SLEPT" -gt 600 ]]; then
+                echo Timeout acquiring lock, continuing anyway...
+                break
+            fi
+        done
+    else
+        lockfile "$LOCKFILE" -r -1
+    fi
+
 fi
 
 if [[ ! -d $ULPATH ]]; then
@@ -66,7 +82,7 @@ if [[ -n "`ls ${ULPATH}`" ]]; then
             fi
         fi
     done
-    
+
     if [[ -n "$DLHOST" ]]; then
         rsync -rlDzv --ignore-existing ${ULPATH}/ ${DLHOST}:${DLPATH}
     else
