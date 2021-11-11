@@ -29,14 +29,6 @@ foreach lic $good_licenses {
     set license_good($lic) 1
 }
 
-proc all_licenses_except { args } {
-    set remaining $::good_licenses
-    foreach arg $args {
-        set remaining [lsearch -inline -all -not -exact $remaining $arg]
-    }
-    return $remaining
-}
-
 # keep these values sorted
 array set license_conflicts \
     [list \
@@ -74,7 +66,6 @@ array set license_conflicts \
     mpl [list agpl cecill gpl] \
     noncommercial [list agpl cecill gpl] \
     openssl [list agpl cecill gpl] \
-    opensslexception [all_licenses_except openssl ssleay] \
     php [list agpl cecill gpl] \
     qpl [list agpl cecill gpl] \
     restrictive/distributable [list agpl cecill gpl] \
@@ -82,6 +73,9 @@ array set license_conflicts \
     ssleay [list agpl cecill gpl] \
     zpl-1 [list agpl cecill gpl] \
     ]
+
+# map license name indicating exception to regex matching port names it applies to
+set license_exceptions(opensslexception) {^openssl[0-9]*$}
 
 # license database format:
 # each line consists of "portname mtime {array}"
@@ -276,12 +270,26 @@ proc check_licenses {portName variantInfo} {
                 foreach top_sublist [concat $top_license $top_license_names] {
                     set any_sub_compatible 0
                     foreach top_lic $top_sublist {
-                        if {![info exists ::license_conflicts([string tolower $top_lic])]
-                            || ([lsearch -sorted $::license_conflicts([string tolower $top_lic]) $lic] == -1
-                            && [lsearch -sorted $::license_conflicts([string tolower $top_lic]) [string tolower $full_lic]] == -1)} {
+                        #puts stderr "checking $top_lic with $full_lic in $aPort"
+                        set top_lic_low [string tolower $top_lic]
+                        if {[info exists ::license_exceptions($top_lic_low)]} {
+                            #puts stderr "exception exists for $top_lic"
+                            if {[regexp $::license_exceptions($top_lic_low) $aPort]} {
+                                #puts stderr "exception $top_lic_low exists for $::license_exceptions($top_lic_low) which matches $aPort"
+                                set any_sub_compatible 1
+                                break
+                            } else {
+                                #puts stderr "exception $top_lic_low does not apply to $aPort"
+                                continue
+                            }
+                        } elseif {![info exists ::license_conflicts($top_lic_low)]
+                            || ([lsearch -sorted $::license_conflicts($top_lic_low) $lic] == -1
+                            && [lsearch -sorted $::license_conflicts($top_lic_low) [string tolower $full_lic]] == -1)} {
+                            #puts stderr "no exception and no conflict exists for $top_lic with $full_lic in $aPort"
                             set any_sub_compatible 1
                             break
                         }
+                        set conflicting_top_lic $top_lic
                     }
                     if {!$any_sub_compatible} {
                         set any_conflict 1
@@ -298,7 +306,14 @@ proc check_licenses {portName variantInfo} {
                 return [list 1 "\"$portName\" is not distributable because its dependency \"$aPort\" has license \"$lic\" which is not known to be distributable"]
             }
             if {!$any_compatible} {
-                return [list 1 "\"$portName\" is not distributable because its license \"$top_lic\" conflicts with license \"$full_lic\" of dependency \"$aPort\""]
+                if {[info exists conflicting_top_lic]} {
+                    set display_lic " \"$conflicting_top_lic\" "
+                } else {
+                    # Only has an exception and not an actual license listed.
+                    # This is a mistake, but let's handle it gracefully anyway.
+                    set display_lic ""
+                }
+                return [list 1 "\"$portName\" is not distributable because its license${display_lic}conflicts with license \"$full_lic\" of dependency \"$aPort\""]
             }
         }
 
