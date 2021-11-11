@@ -234,10 +234,12 @@ proc check_licenses {portName variantInfo} {
 
     # start with deps of top-level port
     set portList [lindex $top_info 0]
+    foreach p $portList {
+        set portSeen($p) 1
+    }
     while {[llength $portList] > 0} {
         set aPort [lindex $portList 0]
-        # mark as seen and remove from the list
-        set portSeen($aPort) 1
+        # remove it from the list
         set portList [lreplace $portList 0 0]
         if {[info exists noconflict_ports($aPort)]} {
             continue
@@ -326,6 +328,7 @@ proc check_licenses {portName variantInfo} {
         foreach possiblyNewPort [lindex $aPortInfo 0] {
             if {![info exists portSeen($possiblyNewPort)] && ![info exists aPort_noconflict_ports($possiblyNewPort)]} {
                 lappend portList $possiblyNewPort
+                set portSeen($possiblyNewPort) 1
             }
         }
     }
