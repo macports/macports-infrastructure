@@ -213,9 +213,13 @@ proc check_licenses {portName variantInfo} {
     }
     set top_license_names [list]
     # check that top-level port's license(s) are good
+    if {$top_license eq ""} {
+        return [list 1 "\"$portName\" is not distributable because its license option is empty"]
+    }
     foreach sublist $top_license {
         # each element may be a list of alternatives (i.e. only one need apply)
         set any_good 0
+        set lic ""
         set sub_names [list]
         foreach full_lic $sublist {
             # chop off any trailing version number
@@ -250,6 +254,9 @@ proc check_licenses {portName variantInfo} {
             continue
         }
         set aPortLicense [lindex $aPortInfo 1]
+        if {$aPortLicense eq ""} {
+            return [list 1 "\"$portName\" is not distributable because its dependency \"$aPort\" has an empty license option"]
+        }
         set installs_libs [lindex $aPortInfo 2]
         if {!$installs_libs} {
             continue
@@ -257,11 +264,13 @@ proc check_licenses {portName variantInfo} {
         foreach sublist $aPortLicense {
             set any_good 0
             set any_compatible 0
+            set lic ""
             # check that this dependency's license(s) are good
             foreach full_lic $sublist {
                 set lic [remove_version [string tolower $full_lic]]
                 if {[info exists ::license_good($lic)]} {
                     set any_good 1
+                    set conflicting_dep_lic $full_lic
                 } else {
                     # no good being compatible with other licenses if it's not distributable itself
                     continue
@@ -315,7 +324,7 @@ proc check_licenses {portName variantInfo} {
                     # This is a mistake, but let's handle it gracefully anyway.
                     set display_lic ""
                 }
-                return [list 1 "\"$portName\" is not distributable because its license${display_lic}conflicts with license \"$full_lic\" of dependency \"$aPort\""]
+                return [list 1 "\"$portName\" is not distributable because its license${display_lic}conflicts with license \"$conflicting_dep_lic\" of dependency \"$aPort\""]
             }
         }
 
