@@ -41,10 +41,7 @@ array set license_conflicts \
     apsl [list agpl cecill gpl] \
     beopen [list agpl cecill gpl] \
     bsd-old [list agpl cecill gpl] \
-    cc-by-1 [list agpl cecill gpl] \
-    cc-by-2 [list agpl cecill gpl] \
-    cc-by-2.5 [list agpl cecill gpl] \
-    cc-by-3 [list agpl cecill gpl] \
+    cc-by [list agpl cecill gpl] \
     cc-by-sa [list agpl cecill gpl] \
     cddl [list agpl cecill gpl] \
     cecill [list afl agpl apache apsl beopen bsd-old cc-by-1 cc-by-2 cc-by-2.5 cc-by-3 cc-by-sa cddl cnri cpl epl gd gplconflict ibmpl lppl mpl noncommercial openssl php qpl restrictive/distributable ruby ssleay zpl-1] \
