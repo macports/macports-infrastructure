@@ -34,7 +34,10 @@ if len(sys.argv) > 1:
 import re
 # patterns to match against for archives that are the current version
 currentVersions = {}
-fd = open(versionFile, 'r')
+if versionFile == '-':
+    fd = sys.stdin
+else:
+    fd = open(versionFile, 'r')
 for line in fd:
     name, version = line.split()
     currentVersions[name] = re.compile(name+'-'+version+'[.+]')
