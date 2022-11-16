@@ -50,6 +50,15 @@ foreach vers {10 11 12 13 14 15 16 17 18 19} {
         lappend platforms $vers i386
     }
 }
+foreach vers {20 21 22} {
+    if {${macports::os_major} != $vers} {
+        lappend platforms $vers arm $vers i386
+    } elseif {${macports::os_arch} eq "i386"} {
+        lappend platforms $vers arm
+    } else {
+        lappend platforms $vers i386
+    }
+}
 # build_arch values that could be considered "native" on platforms
 # where 'uname -p' says 'i386'
 set i386_archs [list x86_64 noarch i386]
@@ -132,9 +141,14 @@ if {[info exists keepfile]} {
             set segments [split [file tail $archive] .]
             set archs [split [lindex $segments end-1] -]
             set major [lindex [split [lindex $segments end-2] _] end]
+            if {$major eq "any"} {
+                set major ${macports::os_major}
+            }
             set this_platforms [list]
             foreach arch $archs {
-                if {$arch in $i386_archs} {
+                if {$arch eq "arm64"} {
+                    lappend this_platforms $major arm
+                } elseif {$arch in $i386_archs} {
                     lappend this_platforms $major i386
                 } else {
                     lappend this_platforms $major powerpc
