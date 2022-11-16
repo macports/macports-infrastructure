@@ -68,11 +68,12 @@ if {[catch {set res [mportlistall]} result]} {
     error "listing all ports failed: $result"
 }
 
-proc add_distfiles {porturl subport distfiles_var check_platforms} {
-    upvar $distfiles_var portname_distfiles
+proc get_distfiles {porturl subport check_platforms} {
+    set portname_distfiles [list]
     if {[catch {mportopen $porturl [list subport $subport] {}} mport]} {
         ui_error "mportopen $porturl failed: $mport"
-        error "couldn't open portfile for $subport"
+        #error "couldn't open portfile for $subport"
+        return $portname_distfiles
     }
     set workername [ditem_key $mport workername]
     if {![catch {$workername eval {portfetch::fetch_init; return $all_dist_files}} all_dist_files]} {
@@ -111,29 +112,32 @@ proc add_distfiles {porturl subport distfiles_var check_platforms} {
         }
         mportclose $mport
     }
+
+    return $portname_distfiles
 }
 
-set distfiles_to_keep [list]
+filemap create distfiles_to_keep
 if {[info exists keepfile]} {
     set fd [open $keepfile r]
     while {[gets $fd line] != -1} {
-        lappend distfiles_to_keep $line
+        filemap set distfiles_to_keep $line 1
     }
     close $fd
 } else {
-    # generate list of desired distfiles
+    # generate set of desired distfiles
     set portfile_dir [file join ${tmpdir} from_archive]
     file delete -force ${portfile_dir}
     file mkdir ${portfile_dir}
     foreach {portname info_list} $result {
-        set portname_distfiles [list]
         array unset portinfo
         array set portinfo $info_list
         if {[lsearch -exact -nocase $portinfo(license) "nomirror"] >= 0} {
             # shouldn't be mirrored, so don't keep it if it is somehow there
             continue
         }
-        add_distfiles $portinfo(porturl) $portname portname_distfiles $platforms
+        foreach f [get_distfiles $portinfo(porturl) $portname $platforms] {
+            filemap set distfiles_to_keep $f 1
+        }
         foreach archive [glob -nocomplain -directory $packages_root ${portname}/*.${archive_type}] {
             exec -ignorestderr tar -xjq -C ${portfile_dir} -f $archive +PORTFILE
             file rename -force ${portfile_dir}/+PORTFILE ${portfile_dir}/Portfile
@@ -154,15 +158,14 @@ if {[info exists keepfile]} {
                     lappend this_platforms $major powerpc
                 }
             }
-            add_distfiles file://${portfile_dir} $portname portname_distfiles $this_platforms
+            foreach f [get_distfiles file://${portfile_dir} $portname $this_platforms] {
+                filemap set distfiles_to_keep $f 1
+            }
         }
-        # deduplicate as we go
-        lappend distfiles_to_keep {*}[lsort -unique $portname_distfiles]
     }
 
-    set distfiles_to_keep [lsort -unique $distfiles_to_keep]
     set fd [open [file join $workdir distfiles_keep.txt] w]
-    puts $fd [join $distfiles_to_keep \n]
+    puts $fd [join [filemap list distfiles_to_keep 1] \n]
     close $fd
     file delete -force ${portfile_dir}
 }
@@ -176,10 +179,10 @@ if {[info exists keepfile]} {
 set dirlist [list $distfiles_root]
 set fd [open [file join $workdir distfiles_delete.txt] w]
 while {$dirlist ne ""} {
-    set dir [lindex $dirlist 0]
-    set dirlist [lreplace $dirlist 0 0]
+    set dir [lindex $dirlist end]
+    set dirlist [lreplace ${dirlist}[set dirlist {}] end end]
     foreach f [glob -nocomplain -directory $dir *] {
-        if {[file isfile $f] && [file mtime $f] < $start_time && [lsearch -exact -sorted $distfiles_to_keep [file tail $f]] == -1} {
+        if {[file isfile $f] && [file mtime $f] < $start_time && ![filemap exists distfiles_to_keep [file tail $f]]} {
             puts $fd $f
         } elseif {[file isdirectory $f]} {
             lappend dirlist $f
