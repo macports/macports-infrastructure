@@ -43,7 +43,7 @@ if [ "$IMAGES" -gt 0 ]; then
 fi
 
 printf "Rebuilding container %s with tag %s\n" "$CONTAINERNAME" "$NEWREV-$TIMESTAMP"
-docker build --pull --no-cache -t "$CONTAINERNAME:$NEWREV-$TIMESTAMP" .
+docker build --pull --no-cache -t "$CONTAINERNAME:$NEWREV-$TIMESTAMP" . 2>&1
 
 printf "Rebuild successful, tagging as %s:latest\n" "$CONTAINERNAME"
 docker tag "$CONTAINERNAME:$NEWREV-$TIMESTAMP" "$CONTAINERNAME:latest"
