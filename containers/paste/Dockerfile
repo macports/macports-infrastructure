@@ -9,7 +9,7 @@ RUN apk add --no-cache \
 	git
 
 RUN git clone https://github.com/jhthorsen/app-mojopaste /app-mojopaste \
-	&& git -C /app-mojopaste checkout 1.04
+	&& git -C /app-mojopaste checkout 1.05
 
 VOLUME /app/data
 
