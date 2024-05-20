@@ -194,16 +194,14 @@ if [ "${PORTS_CHANGED}" -eq 1 ]; then
             INDEX="PortIndex_darwin_${PLATFORM}"
             ${PORTINDEX} -p "macosx_${PLATFORM}" -o "${INDEX}" \
                 | ${AWK} '{ print "Updating " idx ":\t" $0 }' idx="$INDEX" \
-                | expand -t 40,48,56,64,72,80 &
+                | expand -t 40,48,56,64,72,80
         done
-        wait
 
         # generate json for each platform-specific index
         for PLATFORM in $PLATFORMS; do
             INDEX="PortIndex_darwin_${PLATFORM}"
-            ${TCLSH} "${PORTINDEX2JSON}" "${INDEX}"/PortIndex --info commit="${PORTS_NEW_REV}" > "${INDEX}"/PortIndex.json &
+            ${TCLSH} "${PORTINDEX2JSON}" "${INDEX}"/PortIndex --info commit="${PORTS_NEW_REV}" > "${INDEX}"/PortIndex.json
         done
-        wait
     )
 fi
 
