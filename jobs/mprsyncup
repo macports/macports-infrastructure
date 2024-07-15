@@ -55,6 +55,7 @@ TAR="/usr/bin/tar"
 OPENSSL="/usr/bin/openssl"
 AWK="/usr/bin/awk"
 STAT="${MPBIN}/gstat"
+GZIP="${MPBIN}/gzip"
 BASENAME="/usr/bin/basename"
 TCLSH="${PREFIX}/bin/port-tclsh"
 PORTINDEX="${PREFIX}/bin/portindex"
@@ -237,6 +238,10 @@ if [ "${PORTS_CHANGED}" -eq 1 ]; then
         hardlink "${INDEX_DIR}"/PortIndex "${INDEX_LINK_DIR}"/PortIndex
     done
     sign "${ROOT}"/ports.tar "${ROOT}"/PortIndex_*/PortIndex
+    if [ -x "${GZIP}" ]; then
+        ${GZIP} --best --keep --rsyncable --suffix .gz-rsync "${ROOT}"/ports.tar
+        sign "${ROOT}"/ports.tar.gz-rsync
+    fi
 fi
 
 # Tarballs used to be a symlink to the real directory tarballs_current.
@@ -253,6 +258,10 @@ fi
 if [ "${PORTS_CHANGED}" -eq 1 ]; then
     ${MV} "${ROOT}"/ports.tar.gz "${RSYNCROOT}"/release
     hardlink "${RSYNCROOT}"/release/ports.tar.gz "${RSYNCROOT}"/distfiles/ports.tar.gz
+    if [ -f "${ROOT}"/ports.tar.gz-rsync ]; then
+        ${MV} "${ROOT}"/ports.tar.gz-rsync "${ROOT}"/ports.tar.gz
+        ${MV} "${ROOT}"/ports.tar.gz-rsync.rmd160 "${ROOT}"/ports.tar.gz.rmd160
+    fi
     ${MV} "${ROOT}"/ports.tar* "${RSYNCROOT}"/release/tarballs
     for INDEX_DIR in "${RSYNCROOT}"/release/ports/PortIndex_*; do
         INDEX_LINK_DIR="${RSYNCROOT}/release/tarballs/${INDEX_DIR##*/}"
