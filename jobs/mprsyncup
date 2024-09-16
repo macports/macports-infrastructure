@@ -65,7 +65,7 @@ PATH=${PREFIX}/bin:/bin:/usr/bin:/usr/sbin:${MPBIN}
 
 # Platforms we generate indexes for. This is intentionally split on
 # whitespace later.
-PLATFORMS="8_powerpc 8_i386 9_powerpc 9_i386 10_i386 11_i386 12_i386 13_i386 14_i386 15_i386 16_i386 17_i386 18_i386 19_i386 20_i386 20_arm 21_i386 21_arm 22_i386 22_arm 23_i386 23_arm"
+PLATFORMS="8_powerpc 8_i386 9_powerpc 9_i386 10_i386 11_i386 12_i386 13_i386 14_i386 15_i386 16_i386 17_i386 18_i386 19_i386 20_i386 20_arm 21_i386 21_arm 22_i386 22_arm 23_i386 23_arm 24_i386 24_arm"
 
 # Sources information:
 BASEURL=https://github.com/macports/macports-base.git
