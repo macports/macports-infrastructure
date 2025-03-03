@@ -1,0 +1,53 @@
+# Known good versions of dependencies for buildbot 0.8.14
+# Of special note: buildbot declares that it needs SQLAlchemy
+# <= 0.7.10, but actually only works with >= 0.8 < 1.4. See the patch
+# in the buildbot-0.8 port.
+
+# Using this file requires pip and preferably virtualenv, which
+# unfortunately has its own dependency version issues if installing
+# from scratch. For completeness, these versions are known to work with
+# python 2.7:
+#
+# configparser == 4.0.2
+# contextlib2 == 0.6.0.post1
+# distlib == 0.3.9
+# filelock == 3.2.1
+# importlib_metadata == 2.1.3
+# importlib_resources == 3.3.1
+# pathlib2 == 2.3.7.post1
+# platformdirs == 2.0.2
+# scandir == 1.10.0
+# setuptools == 44.1.1
+# setuptools_scm == 5.0.2
+# singledispatch == 3.7.0
+# six == 1.17.0
+# typing == 3.10.0.0
+# virtualenv == 20.15.1
+# zipp == 1.2.0
+
+attrs == 21.4.0
+Automat == 20.2.0
+configparser == 4.0.2
+constantly == 15.1.0
+contextlib2 == 0.6.0.post1
+decorator == 4.4.2
+hyperlink == 21.0.0
+idna == 2.10
+importlib_metadata == 2.1.3
+incremental == 22.10.0
+Jinja2 == 2.11.3
+MarkupSafe == 1.1.1
+pathlib2 == 2.3.7.post1
+pbr == 6.1.1
+PyHamcrest == 1.10.1
+python_dateutil == 2.9.0.post0
+scandir == 1.10.0
+six == 1.17.0
+SQLAlchemy == 1.3.24
+sqlalchemy_migrate == 0.13.0
+sqlparse == 0.3.1
+Tempita == 0.5.2
+Twisted == 20.3.0
+typing == 3.10.0.0
+zipp == 1.2.0
+zope.interface == 5.5.2
