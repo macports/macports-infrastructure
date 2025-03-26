@@ -2,6 +2,8 @@
 
 # Alternate method of updating MacPorts rsync files.
 
+set -e
+
 echo "Starting update of rsync files at $(date -u -Iseconds)"
 
 # Read shell fragment with config variables if specified
@@ -103,6 +105,7 @@ rm -f "${BASEDIR}/rsyncroot/release/tarballs/ports.tar" "${BASEDIR}/rsyncroot/re
 # Create daily tarball
 echo "Creating daily tarball"
 rm -f "${BASEDIR}/rsyncroot/distfiles/ports.tar.gz" "${BASEDIR}/rsyncroot/release/ports.tar.gz"
+mkdir -p "${BASEDIR}/rsyncroot/distfiles"
 mv "${BASEDIR}"/rsyncroot/release/tarballs/extract/PortIndex* "${BASEDIR}"/rsyncroot/release/tarballs/extract/ports
 "$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs/extract" --exclude 'PortIndex*/PortIndex.json' \
     -c --use-compress-program "$GZIP --best --rsyncable" -f "${BASEDIR}/rsyncroot/release/ports.tar.gz" ports
