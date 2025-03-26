@@ -36,8 +36,6 @@ if [ -z "$PRIVKEY" ]; then
     exit 1
 fi
 
-HOSTOS="$(uname -s)"
-
 BASEDIR=$(pwd)
 
 rm -rf "${BASEDIR}/rsyncroot"
@@ -86,73 +84,85 @@ fi
 # Prepare ports tree and PortIndex dirs
 
 LATEST_PORTS_UPLOAD="$(ls -1t "${MIRROR_UPLOAD_PATH}"/portindex-*.tar.bz2 | head -n1)"
+NEW_PORTS=0
+if [ ! -f "${BASEDIR}/last_deployed_ports" -o \
+        "$(basename "$LATEST_PORTS_UPLOAD")" != "$(cat "${BASEDIR}/last_deployed_ports")" ]; then
 
-# Clean up older uploads
-echo "Cleaning up old ports uploads"
-find "${MIRROR_UPLOAD_PATH}" -type f -name "portindex-*.tar.bz2" \
-    -not -newer "$LATEST_PORTS_UPLOAD" -not -samefile "$LATEST_PORTS_UPLOAD" \
-    -delete -printf "Deleted %f\n"
-rm -rf "${BASEDIR}/rsyncroot/release/tarballs/extract"
-mkdir -p "${BASEDIR}/rsyncroot/release/tarballs/extract"
-echo "Extracting latest ports"
-"$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs/extract" -xjf "$LATEST_PORTS_UPLOAD"
+    # Clean up older uploads
+    echo "Cleaning up old ports uploads"
+    find "${MIRROR_UPLOAD_PATH}" -type f -name "portindex-*.tar.bz2" \
+        -not -newer "$LATEST_PORTS_UPLOAD" -not -samefile "$LATEST_PORTS_UPLOAD" \
+        -delete -printf "Deleted %f\n"
+    rm -rf "${BASEDIR}/rsyncroot/release/tarballs/extract"
+    mkdir -p "${BASEDIR}/rsyncroot/release/tarballs/extract"
+    echo "Extracting latest ports"
+    "$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs/extract" -xjf "$LATEST_PORTS_UPLOAD"
 
-# Create ports.tar
-echo "Creating release/tarballs/ports.tar(.gz)"
-rm -f "${BASEDIR}/rsyncroot/release/tarballs/ports.tar" "${BASEDIR}/rsyncroot/release/tarballs/ports.tar.gz"
-"$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs/extract" -cf "${BASEDIR}/rsyncroot/release/tarballs/ports.tar" ports
-"$GZIP" --best --keep --rsyncable "${BASEDIR}/rsyncroot/release/tarballs/ports.tar"
+    # Create ports.tar
+    echo "Creating release/tarballs/ports.tar(.gz)"
+    rm -f "${BASEDIR}/rsyncroot/release/tarballs/ports.tar" "${BASEDIR}/rsyncroot/release/tarballs/ports.tar.gz"
+    "$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs/extract" -cf "${BASEDIR}/rsyncroot/release/tarballs/ports.tar" ports
+    "$GZIP" --best --keep --rsyncable "${BASEDIR}/rsyncroot/release/tarballs/ports.tar"
 
-# Create daily tarball
-echo "Creating daily tarball"
-rm -f "${BASEDIR}/rsyncroot/distfiles/ports.tar.gz" "${BASEDIR}/rsyncroot/release/ports.tar.gz"
-mkdir -p "${BASEDIR}/rsyncroot/distfiles"
-mv "${BASEDIR}"/rsyncroot/release/tarballs/extract/PortIndex* "${BASEDIR}"/rsyncroot/release/tarballs/extract/ports
-"$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs/extract" --exclude 'PortIndex*/PortIndex.json' \
-    -c --use-compress-program "$GZIP --best --rsyncable" -f "${BASEDIR}/rsyncroot/release/ports.tar.gz" ports
-ln "${BASEDIR}/rsyncroot/release/ports.tar.gz" "${BASEDIR}/rsyncroot/distfiles/ports.tar.gz"
+    # Create daily tarball
+    echo "Creating daily tarball"
+    rm -f "${BASEDIR}/rsyncroot/distfiles/ports.tar.gz" "${BASEDIR}/rsyncroot/release/ports.tar.gz"
+    mkdir -p "${BASEDIR}/rsyncroot/distfiles"
+    mv "${BASEDIR}"/rsyncroot/release/tarballs/extract/PortIndex* "${BASEDIR}"/rsyncroot/release/tarballs/extract/ports
+    "$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs/extract" --exclude 'PortIndex*/PortIndex.json' \
+        -c --use-compress-program "$GZIP --best --rsyncable" -f "${BASEDIR}/rsyncroot/release/ports.tar.gz" ports
+    ln "${BASEDIR}/rsyncroot/release/ports.tar.gz" "${BASEDIR}/rsyncroot/distfiles/ports.tar.gz"
 
-# Put PortIndex dirs in place
-echo "Moving PortIndex dirs"
-mv "${BASEDIR}"/rsyncroot/release/tarballs/extract/ports/PortIndex* "${BASEDIR}"/rsyncroot/release/tarballs
-echo "Deleting temp extracted ports tree"
-rm -rf "${BASEDIR}/rsyncroot/release/tarballs/extract"
+    # Put PortIndex dirs in place
+    echo "Moving PortIndex dirs"
+    mv "${BASEDIR}"/rsyncroot/release/tarballs/extract/ports/PortIndex* "${BASEDIR}"/rsyncroot/release/tarballs
+    echo "Deleting temp extracted ports tree"
+    rm -rf "${BASEDIR}/rsyncroot/release/tarballs/extract"
 
-# Sign files
-for f in "${BASEDIR}"/rsyncroot/release/tarballs/ports.tar{,.gz} \
-         "${BASEDIR}"/rsyncroot/release/tarballs/PortIndex*/PortIndex\
-         "${BASEDIR}"/rsyncroot/{release,distfiles}/ports.tar.gz; do
-    echo "Signing $f"
-    "$OPENSSL" dgst -ripemd160 -sign "${PRIVKEY}" -out "${f}.rmd160" "${f}"
-done
-# Ensure readability
-echo "Setting permissions"
-chmod -R a+rX "${BASEDIR}/rsyncroot"
-
-# Stop rsyncd once there are no connections
-if [ "$HOSTOS" = "Linux" ]; then
-    WAITED=0
-    echo "Waiting for rsyncd to be idle"
-    while [ -n "$(ss -H 'sport = :rsync')" ]; do
-        sleep 10
-        WAITED=$(( $WAITED + 10 ))
-        if [ "$WAITED" -ge 7200 ]; then
-            echo "Waited $(( $WAITED / 60 )) minutes for rsync connections to close, shutting down anyway"
-            break
-        fi
+    # Sign files
+    for f in "${BASEDIR}"/rsyncroot/release/tarballs/ports.tar{,.gz} \
+             "${BASEDIR}"/rsyncroot/release/tarballs/PortIndex*/PortIndex\
+             "${BASEDIR}"/rsyncroot/{release,distfiles}/ports.tar.gz; do
+        echo "Signing $f"
+        "$OPENSSL" dgst -ripemd160 -sign "${PRIVKEY}" -out "${f}.rmd160" "${f}"
     done
-    echo "Stopping rsyncd"
-    sudo /usr/bin/systemctl stop rsync
+
+    echo "$(basename "$LATEST_PORTS_UPLOAD")" > "${BASEDIR}/last_deployed_ports"
+    NEW_PORTS=1
 fi
 
-# Sync files
-echo "Rsyncing files"
-"$RSYNC" -aHv "${BASEDIR}"/rsyncroot/ "$MIRROR_PUBLIC_PATH"
+if [ "$NEW_BASE" = 1 -o "$NEW_PORTS" = 1 ]; then
+    # Ensure readability
+    echo "Setting permissions"
+    chmod -R a+rX "${BASEDIR}/rsyncroot"
 
-# Start rsyncd
-if [ "$HOSTOS" = "Linux" ]; then
-    echo "Starting rsyncd"
-    sudo /usr/bin/systemctl start rsync
+    HOSTOS="$(uname -s)"
+
+    # Stop rsyncd once there are no connections
+    if [ "$HOSTOS" = "Linux" ]; then
+        WAITED=0
+        echo "Waiting for rsyncd to be idle"
+        while [ -n "$(ss -H 'sport = :rsync')" ]; do
+            sleep 10
+            WAITED=$(( $WAITED + 10 ))
+            if [ "$WAITED" -ge 7200 ]; then
+                echo "Waited $(( $WAITED / 60 )) minutes for rsync connections to close, shutting down anyway"
+                break
+            fi
+        done
+        echo "Stopping rsyncd"
+        sudo /usr/bin/systemctl stop rsync
+    fi
+
+    # Sync files
+    echo "Rsyncing files"
+    "$RSYNC" -aHv "${BASEDIR}"/rsyncroot/ "$MIRROR_PUBLIC_PATH"
+
+    # Start rsyncd
+    if [ "$HOSTOS" = "Linux" ]; then
+        echo "Starting rsyncd"
+        sudo /usr/bin/systemctl start rsync
+    fi
 fi
 
 echo "Finished update of rsync files at $(date -u -Iseconds)"
