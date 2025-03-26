@@ -47,7 +47,7 @@ if [ -f "${MIRROR_PUBLIC_PATH}/distfiles/MacPorts/RELEASE_URL" ]; then
     NEW_BASE_VERS="$(cat "${MIRROR_PUBLIC_PATH}/distfiles/MacPorts/RELEASE_URL" | sed -E 's/.*v([0-9.]+)$/\1/')"
     echo "Latest base version is $NEW_BASE_VERS"
     if [ -f "${MIRROR_PUBLIC_PATH}/release/tarballs/base.tar" ]; then
-        CUR_BASE_VERS="$("$TAR" -xOf "${MIRROR_PUBLIC_PATH}/release/tarballs/base.tar" ./base/config/macports_version)"
+        CUR_BASE_VERS="$("$TAR" -xOf "${MIRROR_PUBLIC_PATH}/release/tarballs/base.tar" base/config/macports_version)"
         echo "Currently mirrored base version is $CUR_BASE_VERS"
         if [ "$CUR_BASE_VERS" != "$NEW_BASE_VERS" ]; then
             NEW_BASE=1
