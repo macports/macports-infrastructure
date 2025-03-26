@@ -1,0 +1,154 @@
+#! /bin/bash
+
+# Alternate method of updating MacPorts rsync files.
+
+echo "Starting update of rsync files at $(date -u -Iseconds)"
+
+# Read shell fragment with config variables if specified
+if [ -f "$MPRSYNCUP_CONFIG" ]; then
+    . "$MPRSYNCUP_CONFIG"
+fi
+
+# Defaults
+OPENSSL=${OPENSSL:-/usr/bin/openssl}
+RSYNC=${RSYNC:-/usr/bin/rsync}
+SIGNIFY=${SIGNIFY:-/usr/bin/signify-openbsd}
+TAR=${TAR:-/usr/bin/tar}
+GZIP=${GZIP:-/usr/bin/gzip}
+# signify public key used to verify base releases
+BASE_PUBKEY=${BASE_PUBKEY:-/var/keys/macports-base-2024.pub}
+
+# Path where the public mirrored files should be deployed
+if [ -z "$MIRROR_PUBLIC_PATH" ]; then
+    echo "Must specify MIRROR_PUBLIC_PATH"
+    exit 1
+fi
+# Path to where ports trees uploaded by GitHub Actions can be found
+if [ -z "$MIRROR_UPLOAD_PATH" ]; then
+    echo "Must specify MIRROR_UPLOAD_PATH"
+    exit 1
+fi
+# Path to openssl private key file used to sign base and ports tarballs
+if [ -z "$PRIVKEY" ]; then
+    echo "Must specify PRIVKEY"
+    exit 1
+fi
+
+HOSTOS="$(uname -s)"
+
+BASEDIR=$(pwd)
+
+mkdir -p "${BASEDIR}/rsyncroot/release/tarballs"
+
+# Check for a newer base release
+NEW_BASE=0
+if [ -f "${MIRROR_PUBLIC_PATH}/distfiles/MacPorts/RELEASE_URL" ]; then
+    NEW_BASE_VERS="$(cat "${MIRROR_PUBLIC_PATH}/distfiles/MacPorts/RELEASE_URL" | sed -E 's/.*v([0-9.]+)$/\1/')"
+    echo "Latest base version is $NEW_BASE_VERS"
+    if [ -f "${MIRROR_PUBLIC_PATH}/release/tarballs/base.tar" ]; then
+        CUR_BASE_VERS="$("$TAR" -xOf "${MIRROR_PUBLIC_PATH}/release/tarballs/base.tar" ./base/config/macports_version)"
+        echo "Currently mirrored base version is $CUR_BASE_VERS"
+        if [ "$CUR_BASE_VERS" != "$NEW_BASE_VERS" ]; then
+            NEW_BASE=1
+        fi
+    else
+        NEW_BASE=1
+    fi
+fi
+
+# Update base.tar (for selfupdate with older clients)
+if [ "$NEW_BASE" = 1 -a -f "${MIRROR_PUBLIC_PATH}/distfiles/MacPorts/MacPorts-${NEW_BASE_VERS}.tar.bz2" \
+        -a -f "${MIRROR_PUBLIC_PATH}/distfiles/MacPorts/MacPorts-${NEW_BASE_VERS}.tar.bz2.sig" ]; then
+    if "$SIGNIFY" -V -p "$BASE_PUBKEY" \
+            -m "${MIRROR_PUBLIC_PATH}/distfiles/MacPorts/MacPorts-${NEW_BASE_VERS}.tar.bz2" \
+            -s "${MIRROR_PUBLIC_PATH}/distfiles/MacPorts/MacPorts-${NEW_BASE_VERS}.tar.bz2.sig"; then
+        echo "Signature verified for MacPorts-${NEW_BASE_VERS}.tar.bz2"
+        rm -rf "${BASEDIR}/rsyncroot/release/tarballs/base" "${BASEDIR}/rsyncroot/release/tarballs/MacPorts-${NEW_BASE_VERS}"
+
+        echo "Creating base.tar"
+        "$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs" -xjf "${MIRROR_PUBLIC_PATH}/distfiles/MacPorts/MacPorts-${NEW_BASE_VERS}.tar.bz2"
+        mv "${BASEDIR}/rsyncroot/release/tarballs/MacPorts-${NEW_BASE_VERS}" "${BASEDIR}/rsyncroot/release/tarballs/base"
+        "$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs" -cf "${BASEDIR}/rsyncroot/release/tarballs/base.tar" base
+        rm -rf "${BASEDIR}/rsyncroot/release/tarballs/base" "${BASEDIR}/rsyncroot/release/tarballs/MacPorts-${NEW_BASE_VERS}"
+
+        echo "Signing base.tar"
+        "$OPENSSL" dgst -ripemd160 -sign "${PRIVKEY}" \
+            -out "${BASEDIR}/rsyncroot/release/tarballs/base.tar.rmd160" \
+            "${BASEDIR}/rsyncroot/release/tarballs/base.tar"
+    else
+        echo "Failed to verify signature for MacPorts-${NEW_BASE_VERS}.tar.bz2!"
+    fi
+fi
+
+# Prepare ports tree and PortIndex dirs
+
+LATEST_PORTS_UPLOAD="$(ls -1t "${MIRROR_UPLOAD_PATH}"/portindex-*.tar.bz2 | head -n1)"
+
+# Clean up older uploads
+echo "Cleaning up old ports uploads"
+find "${MIRROR_UPLOAD_PATH}" -type f -name "portindex-*.tar.bz2" \
+    -not -newer "$LATEST_PORTS_UPLOAD" -not -samefile "$LATEST_PORTS_UPLOAD" \
+    -delete -printf "Deleted %f\n"
+rm -rf "${BASEDIR}/rsyncroot/release/tarballs/extract"
+mkdir -p "${BASEDIR}/rsyncroot/release/tarballs/extract"
+echo "Extracting latest ports"
+"$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs/extract" -xjf "$LATEST_PORTS_UPLOAD"
+
+# Create ports.tar
+echo "Creating release/tarballs/ports.tar(.gz)"
+rm -f "${BASEDIR}/rsyncroot/release/tarballs/ports.tar" "${BASEDIR}/rsyncroot/release/tarballs/ports.tar.gz"
+"$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs/extract" -cf "${BASEDIR}/rsyncroot/release/tarballs/ports.tar" ports
+"$GZIP" --best --keep --rsyncable "${BASEDIR}/rsyncroot/release/tarballs/ports.tar"
+
+# Create daily tarball
+echo "Creating daily tarball"
+rm -f "${BASEDIR}/rsyncroot/distfiles/ports.tar.gz" "${BASEDIR}/rsyncroot/release/ports.tar.gz"
+mv "${BASEDIR}"/rsyncroot/release/tarballs/extract/PortIndex* "${BASEDIR}"/rsyncroot/release/tarballs/extract/ports
+"$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs/extract" --exclude 'PortIndex*/PortIndex.json' \
+    -c --use-compress-program "$GZIP --best --rsyncable" -f "${BASEDIR}/rsyncroot/release/ports.tar.gz" ports
+ln "${BASEDIR}/rsyncroot/release/ports.tar.gz" "${BASEDIR}/rsyncroot/distfiles/ports.tar.gz"
+
+# Put PortIndex dirs in place
+echo "Moving PortIndex dirs"
+mv "${BASEDIR}"/rsyncroot/release/tarballs/extract/ports/PortIndex* "${BASEDIR}"/rsyncroot/release/tarballs
+echo "Deleting temp extracted ports tree"
+rm -rf "${BASEDIR}/rsyncroot/release/tarballs/extract"
+
+# Sign files
+for f in "${BASEDIR}"/rsyncroot/release/tarballs/ports.tar{,.gz} \
+         "${BASEDIR}"/rsyncroot/release/tarballs/PortIndex*/PortIndex\
+         "${BASEDIR}"/rsyncroot/{release,distfiles}/ports.tar.gz; do
+    echo "Signing $f"
+    "$OPENSSL" dgst -ripemd160 -sign "${PRIVKEY}" -out "${f}.rmd160" "${f}"
+done
+# Ensure readability
+echo "Setting permissions"
+chmod -R a+rX "${BASEDIR}/rsyncroot"
+
+# Stop rsyncd once there are no connections
+if [ "$HOSTOS" = "Linux" ]; then
+    WAITED=0
+    echo "Waiting for rsyncd to be idle"
+    while [ -n "$(ss -H 'sport = :rsync')" ]; do
+        sleep 10
+        WAITED=$(( $WAITED + 10 ))
+        if [ "$WAITED" -ge 7200 ]; then
+            echo "Waited $(( $WAITED / 60 )) minutes for rsync connections to close, shutting down anyway"
+            break
+        fi
+    done
+    echo "Stopping rsyncd"
+    sudo /usr/bin/systemctl stop rsync
+fi
+
+# Sync files
+echo "Rsyncing files"
+"$RSYNC" -aHv "${BASEDIR}"/rsyncroot/ "$MIRROR_PUBLIC_PATH"
+
+# Start rsyncd
+if [ "$HOSTOS" = "Linux" ]; then
+    echo "Starting rsyncd"
+    sudo /usr/bin/systemctl start rsync
+fi
+
+echo "Finished update of rsync files at $(date -u -Iseconds)"
