@@ -40,6 +40,7 @@ HOSTOS="$(uname -s)"
 
 BASEDIR=$(pwd)
 
+rm -rf "${BASEDIR}/rsyncroot"
 mkdir -p "${BASEDIR}/rsyncroot/release/tarballs"
 
 # Check for a newer base release
