@@ -51,7 +51,9 @@ if [[ -n "$NEED_LOCK" ]]; then
             fi
         done
     else
-        lockfile "$LOCKFILE" -r -1
+        if ! lockfile -1 -r 600 "$LOCKFILE"; then
+            echo Timeout acquiring lock, continuing anyway...
+        fi
     fi
 
 fi
