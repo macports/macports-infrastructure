@@ -53,23 +53,23 @@ else
     fi
 fi
 
-if [[ ! -d $ULPATH ]]; then
-    echo $ULPATH does not exist!
+if [[ ! -d "$ULPATH" ]]; then
+    echo "$ULPATH does not exist!"
     rm -f "$LOCKFILE"
     exit 1
 fi
 
 if [[ -n "`ls ${ULPATH}`" ]]; then
     for archive in ${ULPATH}/*/*; do
-        portname=$(basename $(dirname $archive))
-        aname=$(basename $archive)
-        echo deploying archive: $aname
+        portname="$(basename "$(dirname "$archive")")"
+        aname="$(basename "$archive")"
+        echo "deploying archive: $aname"
         if [[ -n "$PRIVKEY" ]]; then
-            openssl dgst -ripemd160 -sign "${PRIVKEY}" -out ${ULPATH}/${portname}/${aname}.rmd160 ${archive}
-            if [[ $? -eq 0 && -f ${ULPATH}/${portname}/${aname}.rmd160 ]]; then
-                chmod a+r ${ULPATH}/${portname}/${aname}.rmd160
+            openssl dgst -ripemd160 -sign "${PRIVKEY}" -out "${ULPATH}/${portname}/${aname}.rmd160" "${archive}"
+            if [[ $? -eq 0 && -f "${ULPATH}/${portname}/${aname}.rmd160" ]]; then
+                chmod a+r "${ULPATH}/${portname}/${aname}.rmd160"
             else
-                rm -rf $ULPATH
+                rm -rf "$ULPATH"
                 rm -f "$LOCKFILE"
                 exit 1
             fi
@@ -77,16 +77,16 @@ if [[ -n "`ls ${ULPATH}`" ]]; then
     done
 
     if [[ -n "$DLHOST" ]]; then
-        rsync -rlDzv --ignore-existing ${ULPATH}/ ${DLHOST}:${DLPATH}
+        rsync -rlDzv --ignore-existing "${ULPATH}/" "${DLHOST}:${DLPATH}"
     else
-        rsync -rlDzv --ignore-existing ${ULPATH}/ ${DLPATH}
+        rsync -rlDzv --ignore-existing "${ULPATH}/" "${DLPATH}"
     fi
 else
-    echo $ULPATH appears to contain no archives
-    ls -R $ULPATH
+    echo "$ULPATH appears to contain no archives"
+    ls -R "$ULPATH"
 fi
 
 # clean up after ourselves
 rm -f "$LOCKFILE"
-rm -rf $ULPATH
+rm -rf "$ULPATH"
 
