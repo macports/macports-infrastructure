@@ -3,7 +3,7 @@
 # Library code for checking if ports are binary distributable.
 # Used by the port_binary_distributable tool.
 
-set check_deptypes [list depends_build depends_lib]
+set check_deptypes [list depends_lib]
 
 # Notes:
 # 'Restrictive/Distributable' means a non-free license that nonetheless allows
