@@ -90,7 +90,7 @@ if [ ! -f "${BASEDIR}/last_deployed_ports" -o \
 
     # Clean up older uploads
     echo "Cleaning up old ports uploads"
-    find "${MIRROR_UPLOAD_PATH}" -type f -name "portindex-*.tar.bz2" \
+    find "${MIRROR_UPLOAD_PATH}" -maxdepth 1 -type f -name "portindex-*.tar.bz2" \
         -not -newer "$LATEST_PORTS_UPLOAD" -not -samefile "$LATEST_PORTS_UPLOAD" \
         -delete -printf "Deleted %f\n"
     rm -rf "${BASEDIR}/rsyncroot/release/tarballs/extract"
