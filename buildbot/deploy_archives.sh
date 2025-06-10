@@ -26,6 +26,14 @@ fi
 if [[ -z "$PRIVKEY" ]]; then
     PRIVKEY=""
 fi
+# secondary private key to use for signing
+if [[ -z "$PRIVKEY2" ]]; then
+    PRIVKEY2=""
+fi
+# signify(1) executable
+if [[ -z "$SIGNIFY" ]]; then
+    SIGNIFY="/usr/bin/signify-openbsd"
+fi
 
 # Buildbot apparently doesn't run jobs on the master in different dirs or
 # prevent them from running simultaneously.
@@ -64,16 +72,27 @@ if [[ -n "`ls ${ULPATH}`" ]]; then
         portname="$(basename "$(dirname "$archive")")"
         aname="$(basename "$archive")"
         echo "deploying archive: $aname"
-        if [[ -n "$PRIVKEY" ]]; then
-            openssl dgst -ripemd160 -sign "${PRIVKEY}" -out "${ULPATH}/${portname}/${aname}.rmd160" "${archive}"
-            if [[ $? -eq 0 && -f "${ULPATH}/${portname}/${aname}.rmd160" ]]; then
-                chmod a+r "${ULPATH}/${portname}/${aname}.rmd160"
-            else
-                rm -rf "$ULPATH"
-                rm -f "$LOCKFILE"
-                exit 1
+        for CUR_PRIVKEY in "$PRIVKEY" "$PRIVKEY2"; do
+            if [[ "${CUR_PRIVKEY##*.}" = "pem" ]]; then
+                openssl dgst -ripemd160 -sign "$CUR_PRIVKEY" -out "${ULPATH}/${portname}/${aname}.rmd160" "$archive"
+                if [[ $? -eq 0 && -f "${ULPATH}/${portname}/${aname}.rmd160" ]]; then
+                    chmod a+r "${ULPATH}/${portname}/${aname}.rmd160"
+                else
+                    rm -rf "$ULPATH"
+                    rm -f "$LOCKFILE"
+                    exit 1
+                fi
+            elif [[ "${CUR_PRIVKEY##*.}" = "sec" ]]; then
+                "$SIGNIFY" -S -s "$CUR_PRIVKEY" -x "${ULPATH}/${portname}/${aname}.sig" -m "$archive"
+                if [[ $? -eq 0 && -f "${ULPATH}/${portname}/${aname}.sig" ]]; then
+                    chmod a+r "${ULPATH}/${portname}/${aname}.sig"
+                else
+                    rm -rf "$ULPATH"
+                    rm -f "$LOCKFILE"
+                    exit 1
+                fi
             fi
-        fi
+        done
     done
 
     if [[ -n "$DLHOST" ]]; then
