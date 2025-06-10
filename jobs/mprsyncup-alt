@@ -121,10 +121,13 @@ if [ ! -f "${BASEDIR}/last_deployed_ports" -o \
 
     # Sign files
     for f in "${BASEDIR}"/rsyncroot/release/tarballs/ports.tar{,.gz} \
-             "${BASEDIR}"/rsyncroot/release/tarballs/PortIndex*/PortIndex\
+             "${BASEDIR}"/rsyncroot/release/tarballs/PortIndex*/PortIndex \
              "${BASEDIR}"/rsyncroot/{release,distfiles}/ports.tar.gz; do
         echo "Signing $f"
         "$OPENSSL" dgst -ripemd160 -sign "${PRIVKEY}" -out "${f}.rmd160" "${f}"
+        if [ -n "$PRIVKEY_SIGNIFY" ]; then
+            "$SIGNIFY" -S -s "$PRIVKEY_SIGNIFY" -x "${f}.sig" -m "${f}"
+        fi
     done
 
     echo "$(basename "$LATEST_PORTS_UPLOAD")" > "${BASEDIR}/last_deployed_ports"
