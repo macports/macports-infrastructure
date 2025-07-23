@@ -44,13 +44,13 @@ proc get_variants {portinfovar} {
 package require macports
 mportinit
 
-set platforms [list 8 powerpc 8 i386 9 powerpc 9 i386]
+set platforms [list 9 powerpc 9 i386]
 foreach vers {10 11 12 13 14 15 16 17 18 19} {
     if {${macports::os_major} != $vers} {
         lappend platforms $vers i386
     }
 }
-foreach vers {20 21 22} {
+foreach vers {20 21 22 23 24} {
     if {${macports::os_major} != $vers} {
         lappend platforms $vers arm $vers i386
     } elseif {${macports::os_arch} eq "i386"} {
