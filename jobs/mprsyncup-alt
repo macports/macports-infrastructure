@@ -121,7 +121,7 @@ elif [ ! -f "${BASEDIR}/last_deployed_ports" -o \
         -delete -printf "Deleted %f\n"
     rm -rf "${BASEDIR}/rsyncroot/release/tarballs/extract"
     mkdir -p "${BASEDIR}/rsyncroot/release/tarballs/extract"
-    echo "Extracting latest ports"
+    echo "Extracting latest ports from $LATEST_PORTS_UPLOAD"
     "$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs/extract" -xjf "$LATEST_PORTS_UPLOAD"
 
     # Create ports.tar
