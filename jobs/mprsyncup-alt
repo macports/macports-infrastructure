@@ -17,6 +17,7 @@ RSYNC=${RSYNC:-/usr/bin/rsync}
 SIGNIFY=${SIGNIFY:-/usr/bin/signify-openbsd}
 TAR=${TAR:-/usr/bin/tar}
 GZIP=${GZIP:-/usr/bin/gzip}
+REDIS_CLI=${REDIS_CLI:-/usr/bin/redis-cli}
 # signify public key used to verify base releases
 BASE_PUBKEY=${BASE_PUBKEY:-/var/keys/macports-base-2024.pub}
 
@@ -83,15 +84,40 @@ fi
 
 # Prepare ports tree and PortIndex dirs
 
-LATEST_PORTS_UPLOAD="$(ls -1t "${MIRROR_UPLOAD_PATH}"/portindex-*.tar.bz2 | head -n1)"
 NEW_PORTS=0
-if [ ! -f "${BASEDIR}/last_deployed_ports" -o \
+# Figure out the ports tree tarball corresponding to the latest commit
+# recorded as mirrored. This will be what the GitHub Actions job tries
+# to download next time it runs, so we can only delete the tarballs
+# older than this one.
+if [ -x "$REDIS_CLI" ]; then
+    echo "Getting latest mirrored commit from redis db"
+    LAST_MIRRORED_COMMIT="$(redis-cli get mirror.last_commit)"
+    if [ -n "$LAST_MIRRORED_COMMIT" ]; then
+        echo "Got $LAST_MIRRORED_COMMIT"
+        LATEST_PORTS_FROM_DB="${MIRROR_UPLOAD_PATH}/portindex-${LAST_MIRRORED_COMMIT}.tar.bz2"
+    else
+        echo "No latest mirrored commit found"
+    fi
+else
+    echo "Can't find redis-cli"
+fi
+# Find the most recently uploaded ports tree tarball. This is what we
+# will actually deploy. It will usually be the same as the latest
+# mirrored commit, but not always.
+LATEST_PORTS_UPLOAD="$(ls -1t "${MIRROR_UPLOAD_PATH}"/portindex-*.tar.bz2 | head -n1)"
+if [ -z "$LATEST_PORTS_FROM_DB" -o ! -f "$LATEST_PORTS_FROM_DB" ]; then
+    echo "Falling back to assuming latest uploaded ports is latest mirrored"
+    LATEST_PORTS_FROM_DB="$LATEST_PORTS_UPLOAD"
+fi
+if [ -z "$LATEST_PORTS_UPLOAD" ]; then
+    echo "No uploaded ports"
+elif [ ! -f "${BASEDIR}/last_deployed_ports" -o \
         "$(basename "$LATEST_PORTS_UPLOAD")" != "$(cat "${BASEDIR}/last_deployed_ports")" ]; then
 
     # Clean up older uploads
     echo "Cleaning up old ports uploads"
     find "${MIRROR_UPLOAD_PATH}" -maxdepth 1 -type f -name "portindex-*.tar.bz2" \
-        -not -newer "$LATEST_PORTS_UPLOAD" -not -samefile "$LATEST_PORTS_UPLOAD" \
+        -not -newer "$LATEST_PORTS_FROM_DB" -not -samefile "$LATEST_PORTS_FROM_DB" \
         -delete -printf "Deleted %f\n"
     rm -rf "${BASEDIR}/rsyncroot/release/tarballs/extract"
     mkdir -p "${BASEDIR}/rsyncroot/release/tarballs/extract"
