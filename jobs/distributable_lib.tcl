@@ -84,9 +84,10 @@ set license_exceptions(opensslexception) {^openssl[0-9]*$}
 # load database if it exists
 proc init_license_db {dbpath} {
     if {[file isfile ${dbpath}/license_db]} {
+        global license_db
         set fd [open ${dbpath}/license_db r]
         while {[gets $fd entry] >= 0} {
-            set ::license_db([lindex $entry 0]) [lrange $entry 1 end]
+            set license_db([lindex $entry 0]) [lrange $entry 1 end]
         }
         close $fd
     }
@@ -94,12 +95,13 @@ proc init_license_db {dbpath} {
 
 # write out database
 proc write_license_db {dbpath} {
+    global license_db
     if {![file isdirectory dbpath]} {
         file mkdir $dbpath
     }
     set fd [open ${dbpath}/license_db w]
-    foreach portname [array names ::license_db] {
-        puts $fd [list $portname {*}$::license_db($portname)]
+    foreach portname [array names license_db] {
+        puts $fd [list $portname {*}$license_db($portname)]
     }
     close $fd
 }
@@ -114,12 +116,11 @@ proc cleanup_license_db {dbpath} {
         foreach entry [split $content \n] {
             set portSearchResult [mportlookup [lindex $entry 0]]
             if {$portSearchResult ne ""} {
-                array set portInfo [lindex $portSearchResult 1]
-                set portfile_path [macports::getportdir $portInfo(porturl)]/Portfile
+                set portInfo [lindex $portSearchResult 1]
+                set portfile_path [macports::getportdir [dict get $portInfo porturl]]/Portfile
                 if {[file mtime $portfile_path] == [lindex $entry 1]} {
                     puts $fd $entry
                 }
-                array unset portInfo
             }
         }
         close $fd
@@ -129,63 +130,65 @@ proc cleanup_license_db {dbpath} {
 # return deps and license for given port
 proc infoForPort {portName variantInfo} {
     set portSearchResult [mportlookup $portName]
-    if {[llength $portSearchResult] < 1} {
+    if {[llength $portSearchResult] < 2} {
         puts stderr "Warning: port \"$portName\" not found"
         return {}
     }
-    array set portInfo [lindex $portSearchResult 1]
-    set portfile_path [macports::getportdir $portInfo(porturl)]/Portfile
+    lassign $portSearchResult portName portInfo
+    set porturl [dict get $portInfo porturl]
+    set portfile_path [macports::getportdir $porturl]/Portfile
     set variant_string [normalize_variants $variantInfo]
 
     # check if the port's info is already in the db
-    if {[info exists ::license_db($portName)]} {
-        set info_list $::license_db($portName)
+    global license_db
+    if {[info exists license_db($portName)]} {
+        set info_list $license_db($portName)
         if {[file mtime $portfile_path] == [lindex $info_list 0]} {
             # keyed by normalized variant string
-            array set info_array [lindex $info_list 1]
-            if {[info exists info_array($variant_string)]} {
-                return $info_array($variant_string)
+            set info_array [lindex $info_list 1]
+            if {[dict exists $info_array $variant_string]} {
+                return [dict get $info_array $variant_string]
             }
         } else {
-            unset ::license_db($portName)
+            unset license_db($portName)
         }
     }
 
     set dependencyList [list]
-    if {[catch {mportopen $portInfo(porturl) [list subport $portInfo(name)] $variantInfo} result]} {
+    if {[catch {mportopen $porturl [dict create subport $portName] $variantInfo} result]} {
         puts stderr "Warning: port \"$portName\" failed to open: $result"
         return {}
     } else {
         set mport $result
     }
-    array unset portInfo
-    array set portInfo [mportinfo $mport]
+    set portInfo [mportinfo $mport]
     # Quicker not to close the mport, but memory use might become
     # excessive when processing many ports.
     mportclose $mport
 
-    foreach dependencyType $::check_deptypes {
-        if {[info exists portInfo($dependencyType)] && $portInfo($dependencyType) ne ""} {
-            foreach dependency $portInfo($dependencyType) {
+    global check_deptypes
+    foreach dependencyType $check_deptypes {
+        if {[dict exists $portInfo $dependencyType]} {
+            foreach dependency [dict get $portInfo $dependencyType] {
                 lappend dependencyList [string range $dependency [string last ":" $dependency]+1 end]
             }
         }
     }
 
-    set ret [list $dependencyList $portInfo(license)]
-    if {[info exists portInfo(installs_libs)]} {
-        lappend ret $portInfo(installs_libs)
+    set ret [list $dependencyList [dict get $portInfo license]]
+    if {[dict exists $portInfo installs_libs]} {
+        lappend ret [dict get $portInfo installs_libs]
     } else {
         # when in doubt, assume code from the dep is incorporated
         lappend ret yes
     }
-    if {[info exists portInfo(license_noconflict)]} {
-        lappend ret $portInfo(license_noconflict)
+    if {[dict exists $portInfo license_noconflict]} {
+        lappend ret [dict get $portInfo license_noconflict]
     }
 
     # update the db
-    set info_array($variant_string) $ret
-    set ::license_db($portName) [list [file mtime $portfile_path] [array get info_array]]
+    dict set info_array $variant_string $ret
+    set license_db($portName) [list [file mtime $portfile_path] $info_array]
 
     return $ret
 }
@@ -193,8 +196,9 @@ proc infoForPort {portName variantInfo} {
 # return license with any trailing dash followed by a number and/or plus sign removed
 set remove_version_re {[0-9.+]+}
 proc remove_version {license} {
+    global remove_version_re
     set dash [string last - $license]
-    if {$dash != -1 && [regexp $::remove_version_re [string range $license $dash+1 end]]} {
+    if {$dash != -1 && [regexp $remove_version_re [string range $license $dash+1 end]]} {
         return [string range $license 0 $dash-1]
     } else {
         return $license
@@ -216,6 +220,7 @@ proc check_licenses {portName variantInfo} {
     if {$top_license eq ""} {
         return [list 1 "\"$portName\" is not distributable because its license option is empty"]
     }
+    global license_good
     foreach sublist $top_license {
         # each element may be a list of alternatives (i.e. only one need apply)
         set any_good 0
@@ -226,7 +231,7 @@ proc check_licenses {portName variantInfo} {
             set lic [remove_version [string tolower $full_lic]]
             # add name to the list for later
             lappend sub_names $lic
-            if {[info exists ::license_good($lic)]} {
+            if {[info exists license_good($lic)]} {
                 set any_good 1
             }
         }
@@ -241,6 +246,7 @@ proc check_licenses {portName variantInfo} {
     foreach p $portList {
         set portSeen($p) 1
     }
+    global license_exceptions license_conflicts
     while {[llength $portList] > 0} {
         set aPort [lindex $portList 0]
         # remove it from the list
@@ -268,7 +274,7 @@ proc check_licenses {portName variantInfo} {
             # check that this dependency's license(s) are good
             foreach full_lic $sublist {
                 set lic [remove_version [string tolower $full_lic]]
-                if {[info exists ::license_good($lic)]} {
+                if {[info exists license_good($lic)]} {
                     set any_good 1
                     set conflicting_dep_lic $full_lic
                 } else {
@@ -283,19 +289,19 @@ proc check_licenses {portName variantInfo} {
                     foreach top_lic $top_sublist {
                         #puts stderr "checking $top_lic with $full_lic in $aPort"
                         set top_lic_low [string tolower $top_lic]
-                        if {[info exists ::license_exceptions($top_lic_low)]} {
+                        if {[info exists license_exceptions($top_lic_low)]} {
                             #puts stderr "exception exists for $top_lic"
-                            if {[regexp $::license_exceptions($top_lic_low) $aPort]} {
-                                #puts stderr "exception $top_lic_low exists for $::license_exceptions($top_lic_low) which matches $aPort"
+                            if {[regexp $license_exceptions($top_lic_low) $aPort]} {
+                                #puts stderr "exception $top_lic_low exists for $license_exceptions($top_lic_low) which matches $aPort"
                                 set any_sub_compatible 1
                                 break
                             } else {
                                 #puts stderr "exception $top_lic_low does not apply to $aPort"
                                 continue
                             }
-                        } elseif {![info exists ::license_conflicts($top_lic_low)]
-                            || ([lsearch -sorted $::license_conflicts($top_lic_low) $lic] == -1
-                            && [lsearch -sorted $::license_conflicts($top_lic_low) [string tolower $full_lic]] == -1)} {
+                        } elseif {![info exists license_conflicts($top_lic_low)]
+                            || ([lsearch -sorted $license_conflicts($top_lic_low) $lic] == -1
+                            && [lsearch -sorted $license_conflicts($top_lic_low) [string tolower $full_lic]] == -1)} {
                             #puts stderr "no exception and no conflict exists for $top_lic with $full_lic in $aPort"
                             set any_sub_compatible 1
                             break
@@ -348,8 +354,9 @@ proc check_licenses {portName variantInfo} {
 # given a variant string, return an array of variations
 set split_variants_re {([-+])([[:alpha:]_]+[\w\.]*)}
 proc split_variants {variants} {
+    global split_variants_re
     set result [list]
-    set l [regexp -all -inline -- $::split_variants_re $variants]
+    set l [regexp -all -inline -- $split_variants_re $variants]
     foreach { match sign variant } $l {
         lappend result $variant $sign
     }
@@ -358,10 +365,9 @@ proc split_variants {variants} {
 
 # given an array of variations, return a variant string in normalized form
 proc normalize_variants {variations} {
-    array set varray $variations
-    set variant_string ""
-    foreach vname [lsort -ascii [array names varray]] {
-        append variant_string $varray($vname)${vname}
+    set variant_string {}
+    foreach vname [lsort -ascii [dict keys $variations]] {
+        append variant_string [dict get $variations $vname]${vname}
     }
     return $variant_string
 }
