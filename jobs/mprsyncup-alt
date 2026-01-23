@@ -21,7 +21,7 @@ REDIS_CLI=${REDIS_CLI:-/usr/bin/redis-cli}
 # signify public key used to verify base releases
 BASE_PUBKEY=${BASE_PUBKEY:-/var/keys/macports-base-2024.pub}
 # args to pass to tar to make the archive more reproducible
-TAR_REPRO_ARGS="--numeric-owner --group=0 --owner=0 --pax-option='delete=atime,delete=ctime' --sort=name"
+TAR_REPRO_ARGS="--numeric-owner --group=0 --owner=0 --sort=name"
 
 # Path where the public mirrored files should be deployed
 if [ -z "$MIRROR_PUBLIC_PATH" ]; then
