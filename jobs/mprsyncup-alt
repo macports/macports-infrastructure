@@ -20,6 +20,8 @@ GZIP=${GZIP:-/usr/bin/gzip}
 REDIS_CLI=${REDIS_CLI:-/usr/bin/redis-cli}
 # signify public key used to verify base releases
 BASE_PUBKEY=${BASE_PUBKEY:-/var/keys/macports-base-2024.pub}
+# args to pass to tar to make the archive more reproducible
+TAR_REPRO_ARGS="--numeric-owner --group=0 --owner=0 --pax-option='delete=atime,delete=ctime' --sort=name"
 
 # Path where the public mirrored files should be deployed
 if [ -z "$MIRROR_PUBLIC_PATH" ]; then
@@ -70,7 +72,7 @@ if [ "$NEW_BASE" = 1 -a -f "${MIRROR_PUBLIC_PATH}/distfiles/MacPorts/MacPorts-${
         echo "Creating base.tar"
         "$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs" -xjf "${MIRROR_PUBLIC_PATH}/distfiles/MacPorts/MacPorts-${NEW_BASE_VERS}.tar.bz2"
         mv "${BASEDIR}/rsyncroot/release/tarballs/MacPorts-${NEW_BASE_VERS}" "${BASEDIR}/rsyncroot/release/tarballs/base"
-        "$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs" -cf "${BASEDIR}/rsyncroot/release/tarballs/base.tar" base
+        "$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs" -c $TAR_REPRO_ARGS -f "${BASEDIR}/rsyncroot/release/tarballs/base.tar" base
         rm -rf "${BASEDIR}/rsyncroot/release/tarballs/base" "${BASEDIR}/rsyncroot/release/tarballs/MacPorts-${NEW_BASE_VERS}"
 
         echo "Signing base.tar"
@@ -127,8 +129,8 @@ elif [ ! -f "${BASEDIR}/last_deployed_ports" -o \
     # Create ports.tar
     echo "Creating release/tarballs/ports.tar(.gz)"
     rm -f "${BASEDIR}/rsyncroot/release/tarballs/ports.tar" "${BASEDIR}/rsyncroot/release/tarballs/ports.tar.gz"
-    "$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs/extract" -cf "${BASEDIR}/rsyncroot/release/tarballs/ports.tar" ports
-    "$GZIP" --best --keep --rsyncable "${BASEDIR}/rsyncroot/release/tarballs/ports.tar"
+    "$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs/extract" -c $TAR_REPRO_ARGS -f "${BASEDIR}/rsyncroot/release/tarballs/ports.tar" ports
+    "$GZIP" --best --keep --no-name --rsyncable "${BASEDIR}/rsyncroot/release/tarballs/ports.tar"
 
     # Create daily tarball
     echo "Creating daily tarball"
@@ -136,7 +138,8 @@ elif [ ! -f "${BASEDIR}/last_deployed_ports" -o \
     mkdir -p "${BASEDIR}/rsyncroot/distfiles"
     mv "${BASEDIR}"/rsyncroot/release/tarballs/extract/PortIndex* "${BASEDIR}"/rsyncroot/release/tarballs/extract/ports
     "$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs/extract" --exclude 'PortIndex*/PortIndex.json' \
-        -c --use-compress-program "$GZIP --best --rsyncable" -f "${BASEDIR}/rsyncroot/release/ports.tar.gz" ports
+        -c --use-compress-program "$GZIP --best --no-name --rsyncable" $TAR_REPRO_ARGS \
+        -f "${BASEDIR}/rsyncroot/release/ports.tar.gz" ports
     ln "${BASEDIR}/rsyncroot/release/ports.tar.gz" "${BASEDIR}/rsyncroot/distfiles/ports.tar.gz"
 
     # Put PortIndex dirs in place
