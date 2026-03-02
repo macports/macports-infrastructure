@@ -16,6 +16,7 @@ OPENSSL=${OPENSSL:-/usr/bin/openssl}
 RSYNC=${RSYNC:-/usr/bin/rsync}
 SIGNIFY=${SIGNIFY:-/usr/bin/signify-openbsd}
 TAR=${TAR:-/usr/bin/tar}
+BZIP2=${BZIP2:-/usr/bin/bzip2}
 GZIP=${GZIP:-/usr/bin/gzip}
 REDIS_CLI=${REDIS_CLI:-/usr/bin/redis-cli}
 # signify public key used to verify base releases
@@ -70,7 +71,9 @@ if [ "$NEW_BASE" = 1 -a -f "${MIRROR_PUBLIC_PATH}/distfiles/MacPorts/MacPorts-${
         rm -rf "${BASEDIR}/rsyncroot/release/tarballs/base" "${BASEDIR}/rsyncroot/release/tarballs/MacPorts-${NEW_BASE_VERS}"
 
         echo "Creating base.tar"
-        "$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs" -xjf "${MIRROR_PUBLIC_PATH}/distfiles/MacPorts/MacPorts-${NEW_BASE_VERS}.tar.bz2"
+        "$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs" \
+            -xf "${MIRROR_PUBLIC_PATH}/distfiles/MacPorts/MacPorts-${NEW_BASE_VERS}.tar.bz2" \
+            --use-compress-program "$BZIP2"
         mv "${BASEDIR}/rsyncroot/release/tarballs/MacPorts-${NEW_BASE_VERS}" "${BASEDIR}/rsyncroot/release/tarballs/base"
         "$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs" -c $TAR_REPRO_ARGS -f "${BASEDIR}/rsyncroot/release/tarballs/base.tar" base
         rm -rf "${BASEDIR}/rsyncroot/release/tarballs/base" "${BASEDIR}/rsyncroot/release/tarballs/MacPorts-${NEW_BASE_VERS}"
@@ -124,7 +127,8 @@ elif [ ! -f "${BASEDIR}/last_deployed_ports" -o \
     rm -rf "${BASEDIR}/rsyncroot/release/tarballs/extract"
     mkdir -p "${BASEDIR}/rsyncroot/release/tarballs/extract"
     echo "Extracting latest ports from $LATEST_PORTS_UPLOAD"
-    "$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs/extract" -xjf "$LATEST_PORTS_UPLOAD"
+    "$TAR" -C "${BASEDIR}/rsyncroot/release/tarballs/extract" -xf "$LATEST_PORTS_UPLOAD" \
+        --use-compress-program "$BZIP2"
 
     # Create ports.tar
     echo "Creating release/tarballs/ports.tar(.gz)"
