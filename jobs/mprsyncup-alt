@@ -177,7 +177,7 @@ if [ "$NEW_BASE" = 1 -o "$NEW_PORTS" = 1 ]; then
     # Stop rsyncd once there are no connections
     if [ "$HOSTOS" = "Linux" ]; then
         WAITED=0
-        echo "Waiting for rsyncd to be idle"
+        echo "Waiting for rsyncd to be idle since $(date -u -Iseconds)"
         while [ -n "$(ss -H 'sport = :rsync')" ]; do
             sleep 10
             WAITED=$(( $WAITED + 10 ))
@@ -186,7 +186,7 @@ if [ "$NEW_BASE" = 1 -o "$NEW_PORTS" = 1 ]; then
                 break
             fi
         done
-        echo "Stopping rsyncd"
+        echo "Stopping rsyncd at $(date -u -Iseconds)"
         sudo /usr/bin/systemctl stop rsync
     fi
 
