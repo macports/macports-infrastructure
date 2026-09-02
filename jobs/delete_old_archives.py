@@ -39,8 +39,10 @@ if versionFile == '-':
 else:
     fd = open(versionFile, 'r')
 for line in fd:
-    name, version = line.split()
-    currentVersions[name] = re.compile(name+'-'+version+'[.+]')
+    vals = line.split()
+    name = vals[0].lower()
+    versions = [re.escape(v) for v in vals[1:]]
+    currentVersions[name] = re.compile(re.escape(name)+'-(?:'+'|'.join(versions)+')[.+]', re.IGNORECASE)
 fd.close()
 
 import time
@@ -53,7 +55,8 @@ for portdir in os.listdir(rootDir):
     if os.path.isdir(portDirPath):
         for archiveFilename in os.listdir(portDirPath):
             try:
-                if archiveFilename.endswith('.rmd160') or currentVersions[portdir].match(archiveFilename):
+                if archiveFilename.endswith('.rmd160') or archiveFilename.endswith('.sig') \
+                        or currentVersions[portdir.lower()].match(archiveFilename):
                     continue
             except KeyError:
                 pass
@@ -82,6 +85,9 @@ for f in fileList:
         break
     print (f.path)
     sigpath = f.path+'.rmd160'
+    if os.path.isfile(sigpath):
+        print (sigpath)
+    sigpath = f.path+'.sig'
     if os.path.isfile(sigpath):
         print (sigpath)
     totalSize -= f.size
