@@ -68,7 +68,7 @@ if [[ ! -d "$ULPATH" ]]; then
 fi
 
 if [[ -n "`ls ${ULPATH}`" ]]; then
-    for archive in ${ULPATH}/*/*; do
+    for archive in "${ULPATH}"/*/*; do
         portname="$(basename "$(dirname "$archive")")"
         aname="$(basename "$archive")"
         echo "deploying archive: $aname"
@@ -98,7 +98,13 @@ if [[ -n "`ls ${ULPATH}`" ]]; then
     if [[ -n "$DLHOST" ]]; then
         rsync -rlDzv --ignore-existing "${ULPATH}/" "${DLHOST}:${DLPATH}"
     else
-        rsync -rlDzv --ignore-existing "${ULPATH}/" "${DLPATH}"
+        for subdir in "${ULPATH}"/*; do
+            if [[ -d "$subdir" ]]; then
+                destdir="${DLPATH}/$(basename "$subdir")"
+                mkdir -p "$destdir"
+                mv -nv "${subdir}"/* "$destdir"
+            fi
+        done
     fi
 else
     echo "$ULPATH appears to contain no archives"
