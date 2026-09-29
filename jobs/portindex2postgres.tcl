@@ -61,70 +61,48 @@ set ports [mportlistall]
 
 # Iterate over each matching port, extracting its information from the
 # portinfo array.
-foreach {name array} $ports {
+foreach {name portinfo} $ports {
 
-    array unset portinfo
-    array set portinfo $array
-
-    set portname [sql_escape $portinfo(name)]
-    if {[info exists portinfo(version)]} {
-        set portversion [sql_escape $portinfo(version)]
+    set portname [sql_escape $name]
+    if {[dict exists $portinfo version]} {
+        set portversion [sql_escape [dict get $portinfo version]]
     } else {
         set portversion ""
     }
-    set portdir [sql_escape $portinfo(portdir)]
-    if {[info exists portinfo(description)]} {
-        set description [sql_escape $portinfo(description)]
+    set portdir [sql_escape [dict get $portinfo portdir]]
+    if {[dict exists $portinfo description]} {
+        set description [sql_escape [dict get $portinfo description]]
     } else {
         set description ""
     }
-    if {[info exists portinfo(categories)]} {
-        set categories $portinfo(categories)
+    if {[dict exists $portinfo categories]} {
+        set categories [dict get $portinfo categories]
     } else {
         set categories ""
     }
-    if {[info exists portinfo(maintainers)]} {
-        set maintainers $portinfo(maintainers)
+    if {[dict exists $portinfo maintainers]} {
+        set maintainers [dict get $portinfo maintainers]
     } else {
         set maintainers ""
     }
-    if {[info exists portinfo(variants)]} {
-        set variants $portinfo(variants)
+    if {[dict exists $portinfo variants]} {
+        set variants [dict get $portinfo variants]
     } else {
         set variants ""
     }
-    if {[info exists portinfo(depends_fetch)]} {
-        set depends_fetch $portinfo(depends_fetch)
-    } else {
-        set depends_fetch ""
+    set alldeps [list]
+    foreach deptype {fetch extract patch build lib run} {
+        if {[dict exists $portinfo depends_${deptype}]} {
+            lappend alldeps {*}[dict get $portinfo depends_${deptype}]
+        }
     }
-    if {[info exists portinfo(depends_extract)]} {
-        set depends_extract $portinfo(depends_extract)
-    } else {
-        set depends_extract ""
-    }
-    if {[info exists portinfo(depends_build)]} {
-        set depends_build $portinfo(depends_build)
-    } else {
-        set depends_build ""
-    }
-    if {[info exists portinfo(depends_lib)]} {
-        set depends_lib $portinfo(depends_lib)
-    } else {
-        set depends_lib ""
-    }
-    if {[info exists portinfo(depends_run)]} {
-        set depends_run $portinfo(depends_run)
-    } else {
-        set depends_run ""
-    }
-    if {[info exists portinfo(platforms)]} {
-        set platforms $portinfo(platforms)
+    if {[dict exists $portinfo platforms]} {
+        set platforms [dict get $portinfo platforms]
     } else {
         set platforms ""
     }
-    if {[info exists portinfo(license)]} {
-        set licenses $portinfo(license)
+    if {[dict exists $portinfo license]} {
+        set licenses [dict get $portinfo license]
     } else {
         set licenses ""
     }
@@ -145,29 +123,9 @@ foreach {name array} $ports {
         set primary 0
     }
 
-    foreach fetch_dep $depends_fetch {
-        set fetch_dep [sql_escape $fetch_dep]
-        puts $sqlfd "INSERT INTO dependencies VALUES ('$portname', '$fetch_dep');"
-    }
-    
-    foreach extract_dep $depends_extract {
-        set extract_dep [sql_escape $extract_dep]
-        puts $sqlfd "INSERT INTO dependencies VALUES ('$portname', '$extract_dep');"
-    }
-
-    foreach build_dep $depends_build {
-        set build_dep [sql_escape $build_dep]
-        puts $sqlfd "INSERT INTO dependencies VALUES ('$portname', '$build_dep');"
-    }
-
-    foreach lib $depends_lib {
-        set lib [sql_escape $lib]
-        puts $sqlfd "INSERT INTO dependencies VALUES ('$portname', '$lib');"
-    }
-
-    foreach run_dep $depends_run {
-        set run_dep [sql_escape $run_dep]
-        puts $sqlfd "INSERT INTO dependencies VALUES ('$portname', '$run_dep');"
+    foreach dep $alldeps {
+        set dep [sql_escape $dep]
+        puts $sqlfd "INSERT INTO dependencies VALUES ('$portname', '$dep');"
     }
 
     foreach variant $variants {
