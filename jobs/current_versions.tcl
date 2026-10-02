@@ -17,6 +17,9 @@ foreach vers {10 11 12 13 14 15 16 17 18 19} {
 foreach vers {20 21 22 23 24 25} {
     lappend platforms $vers arm $vers i386
 }
+foreach vers {27} {
+    lappend platforms $vers arm
+}
 
 proc lookup {portname osvers arch} {
     global quick_index
