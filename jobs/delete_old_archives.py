@@ -21,16 +21,21 @@ def weightedKey(archive):
     """Key extraction function for sorting using weightedValue"""
     return weightedValue(archive.age, archive.size)
 
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--versions-file', '-f', metavar='FILE', nargs='?', default='current_versions.txt',
+                    help='file containing current port versions')
+parser.add_argument('--root', '-r', metavar='PATH', nargs='?', default='.',
+                    help='top level archives directory (containing subdirs for each port)')
+parser.add_argument('--target-size', '-t', metavar='N', type=int, nargs='?', default=200,
+                    help='GB of non-current archives to keep')
+args = parser.parse_args()
+
+rootDir = args.root
+versionFile = args.versions_file
+targetGB = args.target_size
+
 import sys
-
-versionFile = 'current_versions.txt'
-rootDir = '.'
-
-if len(sys.argv) > 1:
-    rootDir = sys.argv[1]
-    if len(sys.argv) > 2:
-        versionFile = sys.argv[2]
-
 import re
 # patterns to match against for archives that are the current version
 currentVersions = {}
@@ -78,7 +83,7 @@ for f in fileList:
     sys.stderr.write(f.path+' '+str(f.age)+' '+str(f.size)+': weighted value = '+str(weightedValue(f.age, f.size))+'\n')
 
 # trim files until the total size of non-current archives remaining is this or less
-targetSize = 200 * 10**9
+targetSize = targetGB * 10**9
 
 for f in fileList:
     if totalSize <= targetSize:
