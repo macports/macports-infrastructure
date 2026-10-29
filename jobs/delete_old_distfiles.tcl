@@ -313,6 +313,7 @@ if {[info exists keepfile]} {
 # since we don't know which version the archives were built from.
 if {!$keep_only} {
     set dirlist [list $distfiles_root]
+    set keep_dirs [dict create [file join $distfiles_root MacPorts] 1]
     set fd [open [file join $workdir distfiles_delete.txt] w]
     while {[llength $dirlist] > 0} {
         set dir [lindex $dirlist end]
@@ -320,7 +321,7 @@ if {!$keep_only} {
         foreach f [glob -nocomplain -directory $dir *] {
             if {[file isfile $f] && ($start_time - [file mtime $f]) >= $min_age && ![dict exists $distfiles_to_keep [file tail $f]]} {
                 puts $fd $f
-            } elseif {[file isdirectory $f]} {
+            } elseif {[file isdirectory $f] && ![dict exists $keep_dirs $f]} {
                 lappend dirlist $f
             }
         }
