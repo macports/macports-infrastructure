@@ -38,6 +38,8 @@
             "sshknownhostsfile": "ssh_known_hosts",
             "destpath": ""
         },
+        "livecheck": {
+        },
         "mirror": {
             "distfilesdir": ""
         }
